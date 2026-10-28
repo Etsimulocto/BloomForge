@@ -37,6 +37,17 @@ Current capabilities:
 - Save/open **BloomForge JSON project** (editable shapes and workspace state)
 - Export an **SVG with millimeter dimensions** for import into xTool Creative Space
 
+## Better selecting and exact dimensions — build 0.1.4
+
+- Click inside a rectangle, rounded slot or circle, or near the visible line of any shape, to select it.
+- A **14-pixel invisible grab stroke** makes narrow cut lines easier to click. It is editor-only; exported SVG paths stay unchanged.
+- A **top dimension header** shows selected object type, X, Y, width and height in millimeters, all editable.
+- The **right sidebar Position & Dimensions inspector** offers the same editable numbers plus the layer selector.
+- Press Enter after editing a number to apply it; no automatic grid rounding is applied to precision numeric entries.
+- Circle X/Y is its **center**; circle width and height are both its **diameter**.
+- Rectangles and rounded slots use top-left X/Y. Lines and current simple arcs use start-point X/Y with absolute endpoint spans for W/H.
+- For a circle, editing W or H sets the shared diameter. It cannot produce an ellipse in this build.
+
 ## Canvas navigation (Pi mouse and keyboard)
 
 - **Mouse wheel over canvas:** zoom in/out centered on the mouse cursor.
