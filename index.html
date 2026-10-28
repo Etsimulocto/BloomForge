@@ -1,15 +1,23 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>BloomForge 0.1.3 · QuarterBitGames</title>
+<title>BloomForge 0.1.4 · QuarterBitGames</title>
 <style>
 :root{--bg:#eaf0f2;--panel:#fff;--ink:#243441;--border:#cbd5dd;--accent:#0297a6;--canvas:#fff;--grid:#dfe7e9}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px system-ui,Segoe UI,Arial,sans-serif}
 body[data-theme=dark]{--bg:#202b35;--panel:#2e3b47;--ink:#eef4f8;--border:#53636d;--canvas:#344452;--grid:#495968}
 body[data-theme=wood]{--bg:#dfceb0;--panel:#f2e4ca;--ink:#4d3827;--border:#bda47d;--canvas:#fff9eb;--grid:#e9dcca}
-button,input,select{font:inherit}button{border:1px solid var(--border);background:var(--panel);color:var(--ink);border-radius:6px;padding:7px 9px;cursor:pointer}button:hover{border-color:var(--accent)}button.active{background:var(--accent);color:white;border-color:var(--accent)}input,select{max-width:100%;background:var(--panel);color:var(--ink);border:1px solid var(--border);border-radius:5px;padding:6px}input[type=number]{width:85px}input[type=checkbox]{accent-color:var(--accent)}label{display:flex;align-items:center;gap:7px}.app{display:grid;grid-template-columns:180px minmax(340px,1fr) 280px;grid-template-rows:54px minmax(0,1fr) 30px;height:100vh;min-height:520px}.top{grid-column:1/4;display:flex;align-items:center;gap:10px;padding:8px 15px;background:var(--panel);border-bottom:1px solid var(--border)}.brand{font-weight:800;font-size:20px;letter-spacing:.03em}.tag{opacity:.65;font-size:12px}.grow{flex:1}.bench,.right{background:var(--panel);overflow:auto;padding:12px;border-right:1px solid var(--border)}.right{border-right:0;border-left:1px solid var(--border);display:flex;flex-direction:column;gap:12px}.bench h3,.right h3{margin:6px 0 10px;font-size:13px;letter-spacing:.04em}.muted{opacity:.65;font-size:12px}.template{width:100%;display:flex;align-items:center;justify-content:space-between;margin:6px 0;text-align:left}.stage{position:relative;overflow:hidden;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:14px}.paper{position:relative;max-width:100%;max-height:100%;aspect-ratio:1;width:min(100%,calc(100vh - 135px));border:1px solid var(--border);background:var(--canvas);box-shadow:0 6px 24px #0002}.paper svg{width:100%;height:100%;touch-action:none;user-select:none}.info{grid-column:1/4;padding:5px 12px;border-top:1px solid var(--border);background:var(--panel);font-size:12px}.section{border-bottom:1px solid var(--border);padding-bottom:11px}.row{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin:7px 0}.right .tools{margin-top:auto}.toolgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.toolgrid button{min-height:38px}.field{display:grid;grid-template-columns:1fr 90px;align-items:center;gap:6px;margin:5px 0}.layer{display:flex;align-items:center;justify-content:space-between;padding:3px 0}.swatch{display:inline-block;width:11px;height:11px;border:1px solid #888;margin-right:5px}.warn{color:#b74b39;font-weight:600}.sheet-label{position:absolute;left:10px;bottom:7px;font-size:11px;opacity:.7;pointer-events:none}@media(max-width:850px){.app{grid-template-columns:115px minmax(250px,1fr) 210px}.bench,.right{padding:7px}.tag{display:none}}@media(max-width:640px){.app{grid-template-columns:90px minmax(200px,1fr);grid-template-rows:50px minmax(0,1fr) 210px 28px}.top,.info{grid-column:1/3}.right{grid-column:1/3;grid-row:3;overflow:auto}.toolgrid{grid-template-columns:repeat(6,1fr)}}
+button,input,select{font:inherit}button{border:1px solid var(--border);background:var(--panel);color:var(--ink);border-radius:6px;padding:7px 9px;cursor:pointer}button:hover{border-color:var(--accent)}button.active{background:var(--accent);color:white;border-color:var(--accent)}input,select{max-width:100%;background:var(--panel);color:var(--ink);border:1px solid var(--border);border-radius:5px;padding:6px}input[type=number]{width:85px}input[type=checkbox]{accent-color:var(--accent)}label{display:flex;align-items:center;gap:7px}.app{display:grid;grid-template-columns:180px minmax(340px,1fr) 280px;grid-template-rows:54px 57px minmax(0,1fr) 30px;height:100vh;min-height:520px}.top{grid-column:1/4;grid-row:1;display:flex;align-items:center;gap:10px;padding:8px 15px;background:var(--panel);border-bottom:1px solid var(--border)}.brand{font-weight:800;font-size:20px;letter-spacing:.03em}.tag{opacity:.65;font-size:12px}.grow{flex:1}.bench,.right{grid-row:3;background:var(--panel);overflow:auto;padding:12px;border-right:1px solid var(--border)}.right{border-right:0;border-left:1px solid var(--border);display:flex;flex-direction:column;gap:12px}.bench h3,.right h3{margin:6px 0 10px;font-size:13px;letter-spacing:.04em}.muted{opacity:.65;font-size:12px}.template{width:100%;display:flex;align-items:center;justify-content:space-between;margin:6px 0;text-align:left}.stage{grid-row:3;position:relative;overflow:hidden;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:14px}.paper{position:relative;max-width:100%;max-height:100%;aspect-ratio:1;width:min(100%,calc(100vh - 135px));border:1px solid var(--border);background:var(--canvas);box-shadow:0 6px 24px #0002}.paper svg{width:100%;height:100%;touch-action:none;user-select:none}.dimensionbar{grid-column:1/4;grid-row:2;display:flex;gap:12px;align-items:center;padding:6px 14px;background:var(--panel);border-bottom:1px solid var(--border);overflow-x:auto;white-space:nowrap}
+.dimensionbar .barfield{display:flex;align-items:center;gap:5px;font-size:12px}
+.dimensionbar .barfield input{width:85px;min-width:75px;padding:5px 6px}
+.dimensionbar .barfield input:disabled{opacity:.4}
+.dimensionbar .barlabel{font-weight:750;color:var(--accent);letter-spacing:.04em}
+.dimensionbar .units{font-size:11px;opacity:.7}
+.selection-head{font-weight:700;margin-bottom:7px}.subhead{font-size:11px;font-weight:750;letter-spacing:.08em;color:var(--accent);margin:12px 0 7px}.selected-note{font-size:11px;opacity:.7;margin:5px 0 9px}
+.info{grid-column:1/4;grid-row:4;padding:5px 12px;border-top:1px solid var(--border);background:var(--panel);font-size:12px}.section{border-bottom:1px solid var(--border);padding-bottom:11px}.row{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin:7px 0}.right .tools{margin-top:auto}.toolgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.toolgrid button{min-height:38px}.field{display:grid;grid-template-columns:1fr 90px;align-items:center;gap:6px;margin:5px 0}.layer{display:flex;align-items:center;justify-content:space-between;padding:3px 0}.swatch{display:inline-block;width:11px;height:11px;border:1px solid #888;margin-right:5px}.warn{color:#b74b39;font-weight:600}.sheet-label{position:absolute;left:10px;bottom:7px;font-size:11px;opacity:.7;pointer-events:none}@media(max-width:850px){.app{grid-template-columns:115px minmax(250px,1fr) 210px}.bench,.right{padding:7px}.tag{display:none}}@media(max-width:640px){.app{grid-template-columns:90px minmax(200px,1fr);grid-template-rows:50px 57px minmax(0,1fr) 210px 28px}.top,.info,.dimensionbar{grid-column:1/3}.dimensionbar{grid-row:2}.stage,.bench{grid-row:3}.info{grid-row:5}.right{grid-column:1/3;grid-row:4;overflow:auto}.toolgrid{grid-template-columns:repeat(6,1fr)}}
 </style></head>
 <body data-theme="light"><div class="app">
-<header class="top"><span class="brand">🪷 BloomForge</span><strong style="font-size:12px;color:var(--accent);white-space:nowrap">BUILD 0.1.3 · ZOOM TEST</strong><span class="tag">QuarterBitGames LLC · precision workbench 0.1</span><span class="grow"></span><button id="new">New</button><button id="save">Save Project</button><button id="open">Open Project</button><button id="export">Export SVG</button><input id="file" type="file" accept=".json,application/json" hidden></header>
+<header class="top"><span class="brand">🪷 BloomForge</span><strong style="font-size:12px;color:var(--accent);white-space:nowrap">BUILD 0.1.4 · DIMENSIONS</strong><span class="tag">QuarterBitGames LLC · precision workbench 0.1</span><span class="grow"></span><button id="new">New</button><button id="save">Save Project</button><button id="open">Open Project</button><button id="export">Export SVG</button><input id="file" type="file" accept=".json,application/json" hidden></header>
+<div class="dimensionbar" id="dimensionBar"><span class="barlabel">SELECTED</span><span id="selectedName" class="muted">No object</span><span class="barlabel">POSITION</span><label class="barfield">X <input id="topX" type="number" step="0.01" disabled></label><label class="barfield">Y <input id="topY" type="number" step="0.01" disabled></label><span class="barlabel">DIMENSIONS</span><label class="barfield">W <input id="topW" type="number" min="0.001" step="0.01" disabled></label><label class="barfield">H <input id="topH" type="number" min="0.001" step="0.01" disabled></label><span class="units">mm · Enter to apply</span></div>
 <aside class="bench"><h3>PARTS BENCH</h3><div class="muted">Click a template to place a copy on the sheet.</div><div id="templates"></div><hr><div class="muted">Canvas: 12 × 12 in nominal<br>Sheet: 11.75 × 11.75 in<br>Material: 3 mm plywood</div></aside>
 <main class="stage" id="canvasStage"><div class="paper"><svg id="drawing" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" aria-label="Precision drawing canvas">
 <defs><pattern id="grid" width="3" height="3" patternUnits="userSpaceOnUse"><path d="M 3 0 H 0 V 3" fill="none" stroke="var(--grid)" stroke-width=".23"/></pattern></defs>
@@ -18,7 +26,7 @@ button,input,select{font:inherit}button{border:1px solid var(--border);backgroun
 <aside class="right">
 <section class="section"><h3>WORKSHOP</h3><div class="row"><label>Theme <select id="theme"><option value="light">Light</option><option value="dark">Dark</option><option value="wood">Wood</option></select></label><label>Grid <select id="step"><option value="3">3 mm</option><option value="1">1 mm</option><option value="0.5">0.5 mm</option></select></label></div><div class="row"><button id="zoomOut" title="Zoom out (Ctrl+-)">−</button><button id="zoomReset" title="Fit canvas (Ctrl+0)">100%</button><button id="zoomIn" title="Zoom in (Ctrl++)">+</button><span class="muted" id="zoomLabel">100%</span></div><div class="muted">Wheel over canvas: zoom drawing only · Ctrl+wheel: zoom drawing only · Shift+wheel: horizontal pan · Middle drag or Space+drag: pan · Ctrl+/−: zoom · Ctrl+0: reset</div><label><input id="snap" type="checkbox" checked> Snap locked</label><label><input id="guides" type="checkbox" checked> Show grid / sheet frame</label></section>
 <section class="section"><h3>FOUR LAYERS</h3><div id="layers"></div><div class="muted">Green and cyan are guides: excluded from manufacturing SVG by default.</div></section>
-<section class="section"><h3>SELECTED OBJECT</h3><div id="properties" class="muted">Select or draw an object to edit it.</div><div class="row"><button id="duplicate">Duplicate</button><button id="delete">Delete</button><button id="undo">Undo</button><button id="redo">Redo</button></div></section>
+<section class="section"><h3>POSITION & DIMENSIONS</h3><div id="properties" class="muted">Select or draw an object to edit it.</div><div class="row"><button id="duplicate">Duplicate</button><button id="delete">Delete</button><button id="undo">Undo</button><button id="redo">Redo</button></div></section>
 <section class="section"><h3>EXPORT SETTINGS</h3><label><input type="checkbox" id="exportRed" checked> Include red Score/Etch</label><label><input type="checkbox" id="exportGuides"> Include green/cyan guides</label><div class="muted">Exported SVG retains millimeter units. Check operation assignment in xTool before firing.</div></section>
 <section class="tools"><h3>TOOLS · BOTTOM RIGHT</h3><div class="toolgrid" id="tools"><button data-tool="select">Select</button><button data-tool="rect">Rect</button><button data-tool="circle">Circle</button><button data-tool="line">Line</button><button data-tool="slot">Slot</button><button data-tool="arc">Arc</button></div></section>
 </aside><footer class="info" id="status">Ready · select a tool · 3 mm snap enabled</footer></div>
@@ -57,12 +65,64 @@ function attrShape(s){const a={fill:'none',stroke:colors[s.layer]||colors.black,
  if(k==='arc'){let r=Math.max(.01,Math.hypot(s.x2-s.x,s.y2-s.y)/1.41421356);let d=`M ${s.x} ${s.y2} A ${r} ${r} 0 0 1 ${s.x2} ${s.y}`;return el('path',{...a,d})}
  return el('g');
 }
-function render(){objects.replaceChildren();for(const s of state.shapes){if(!state.visible[s.layer])continue;let e=attrShape(s);if(s.id===state.selected){e.setAttribute('stroke-width','1.3');e.setAttribute('stroke-dasharray','2 1')}objects.append(e)}renderProperties();$('status').textContent=`${state.tool.toUpperCase()} · ${state.shapes.length} shapes · ${state.step} mm grid · ${state.snap?'snap ON':'snap OFF'}`;}
-function renderProperties(){const s=state.shapes.find(x=>x.id===state.selected);const c=$('properties');c.replaceChildren();if(!s){c.textContent='Select or draw an object to edit it.';return}
- const group=document.createElement('div');group.textContent=`${s.kind.toUpperCase()} · ${s.layer}`;c.append(group);
- const fields=s.kind==='circle'?['x','y','r']:s.kind==='line'||s.kind==='arc'?['x','y','x2','y2']:['x','y','w','h'];
- for(const f of fields){let row=document.createElement('label');row.className='field';let txt=document.createElement('span');txt.textContent=f==='r'?'Radius (mm)':f+' (mm)';let input=document.createElement('input');input.type='number';input.step='.01';input.value=s[f];input.addEventListener('change',()=>{let v=Number(input.value);if(!valid(v)||(['w','h','r'].includes(f)&&v<=0)){input.value=s[f];return}remember();s[f]=round(v);render()});row.append(txt,input);c.append(row)}
- let row=document.createElement('label');row.className='field';row.textContent='Layer';let sel=document.createElement('select');for(let key of Object.keys(colors)){let o=document.createElement('option');o.value=key;o.textContent=names[key];o.selected=s.layer===key;sel.append(o)}sel.onchange=()=>{remember();s.layer=sel.value;render()};row.append(sel);c.append(row);
+function render(){objects.replaceChildren();for(const s of state.shapes){if(!state.visible[s.layer])continue;
+  const e=attrShape(s);e.setAttribute('pointer-events','none');if(s.id===state.selected){e.setAttribute('stroke-width','1.3');e.setAttribute('stroke-dasharray','2 1')}objects.append(e);
+  // A wide transparent hit shape is independent of the fabrication geometry.
+  // 14 screen pixels of clickable stroke, plus the interior for closed shapes.
+  const hitArea=attrShape(s);hitArea.setAttribute('stroke','transparent');hitArea.setAttribute('stroke-width','14');hitArea.setAttribute('vector-effect','non-scaling-stroke');hitArea.setAttribute('pointer-events',s.kind==='rect'||s.kind==='slot'||s.kind==='circle'?'all':'stroke');
+  if(['rect','slot','circle'].includes(s.kind))hitArea.setAttribute('fill','transparent');
+  hitArea.style.cursor='grab';objects.append(hitArea);
+ }renderProperties();renderTopBar();$('status').textContent=`${state.tool.toUpperCase()} · ${state.shapes.length} shapes · ${state.step} mm grid · ${state.snap?'snap ON':'snap OFF'}`;}
+// Normalize the editor's X/Y/W/H fields for every primitive.
+ // Circles use center X/Y and diameter W/H. Lines/arcs use start X/Y and absolute width/height.
+function dimensions(s){
+ if(s.kind==='circle')return{x:s.x,y:s.y,w:round(s.r*2),h:round(s.r*2)};
+ if(s.kind==='line'||s.kind==='arc')return{x:s.x,y:s.y,w:round(Math.abs(s.x2-s.x)),h:round(Math.abs(s.y2-s.y))};
+ return{x:s.x,y:s.y,w:s.w,h:s.h};
+}
+function updateDimension(id,field,value){
+ const s=state.shapes.find(q=>q.id===id);if(!s||!Number.isFinite(value)||Math.abs(value)>1e6)return false;
+ if(['w','h'].includes(field)&&value<=0)return false;
+ remember();value=round(value);
+ if(s.kind==='circle'){
+  if(field==='w'||field==='h')s.r=round(value/2);
+  else s[field]=value;
+ }else if(s.kind==='line'||s.kind==='arc'){
+  if(field==='x'){s.x2=round(s.x2+(value-s.x));s.x=value}
+  else if(field==='y'){s.y2=round(s.y2+(value-s.y));s.y=value}
+  else if(field==='w')s.x2=round(s.x+(Math.sign(s.x2-s.x)||1)*value);
+  else if(field==='h')s.y2=round(s.y+(Math.sign(s.y2-s.y)||1)*value);
+ }else s[field]=value;
+ render();return true;
+}
+function numericField(id,field,label){
+ const row=document.createElement('label');row.className='field';
+ const txt=document.createElement('span');txt.textContent=label;
+ const input=document.createElement('input');input.type='number';input.step='0.01';input.value=dimensions(state.shapes.find(x=>x.id===id))[field];
+ input.min=['w','h'].includes(field)?'0.001':'';
+ input.addEventListener('change',()=>{if(!updateDimension(id,field,Number(input.value)))render()});
+ row.append(txt,input);return row;
+}
+function renderTopBar(){
+ const s=state.shapes.find(q=>q.id===state.selected);$('selectedName').textContent=s?s.kind.toUpperCase()+' · '+s.layer:'No object';
+ const d=s?dimensions(s):null;
+ for(let field of ['x','y','w','h']){const input=$('top'+field.toUpperCase());input.disabled=!s;input.value=s?d[field]:''}
+}
+for(const field of ['x','y','w','h']){const input=$('top'+field.toUpperCase());input.addEventListener('change',()=>{
+ const id=state.selected;if(!id)return;if(!updateDimension(id,field,Number(input.value)))render();
+ });}
+function renderProperties(){
+ const s=state.shapes.find(x=>x.id===state.selected);const c=$('properties');c.replaceChildren();
+ if(!s){c.textContent='Click a shape or its edge to select. Its dimensions appear here and in the top bar.';return}
+ const head=document.createElement('div');head.className='selection-head';head.textContent=s.kind.toUpperCase()+' · '+s.layer.toUpperCase();c.append(head);
+ const note=document.createElement('div');note.className='selected-note';note.textContent=s.kind==='circle'?'X/Y = center · W/H = diameter':(s.kind==='line'||s.kind==='arc'?'X/Y = start point · W/H = span':'X/Y = top-left corner');c.append(note);
+ const a=document.createElement('div');a.className='subhead';a.textContent='POSITION · mm';c.append(a);
+ c.append(numericField(s.id,'x','X (mm)'),numericField(s.id,'y','Y (mm)'));
+ const b=document.createElement('div');b.className='subhead';b.textContent='DIMENSIONS · mm';c.append(b);
+ c.append(numericField(s.id,'w',s.kind==='circle'?'Diameter (mm)':'Width (mm)'),numericField(s.id,'h',s.kind==='circle'?'Diameter (linked)':'Height (mm)'));
+ const row=document.createElement('label');row.className='field';row.textContent='Layer';const sel=document.createElement('select');
+ for(const key of Object.keys(colors)){const o=document.createElement('option');o.value=key;o.textContent=names[key];o.selected=s.layer===key;sel.append(o)}
+ sel.onchange=()=>{remember();s.layer=sel.value;render()};row.append(sel);c.append(row);
 }
 function setTool(t){state.tool=t;document.querySelectorAll('[data-tool]').forEach(b=>b.classList.toggle('active',b.dataset.tool===t));render()}
 function shapeBetween(a,b,kind,layer=state.layer){let x=Math.min(a.x,b.x),y=Math.min(a.y,b.y),w=Math.max(state.step,Math.abs(b.x-a.x)),h=Math.max(state.step,Math.abs(b.y-a.y));if(kind==='circle')return{id:uid(),kind,layer,x:a.x,y:a.y,r:Math.max(.5,Math.hypot(b.x-a.x,b.y-a.y))};if(kind==='line'||kind==='arc')return{id:uid(),kind,layer,x:a.x,y:a.y,x2:b.x,y2:b.y};return{id:uid(),kind,layer,x,y,w,h}}
