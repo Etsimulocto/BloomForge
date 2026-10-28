@@ -1,3 +1,13 @@
+## Open 2×2 LEGO corner and Cut Line tool — build 0.1.31
+
+- Removes **LEGO end corner · mitred 8 mm** from the Parts Bench (existing placed/saved objects of that type continue to load). Other corner templates are retained.
+- The **LEGO 2×2 corner · 3 holes** is now an **open outer edge**: no left outside line and no bottom outside line. Its remaining edge travels from upper-left to upper-middle, down/around the rounded inner step, along the step to the right, and down the outer right edge. The other **three 4.8 mm holes remain complete closed contours**, with the same 8 mm pitch.
+- Adds **✂ Cut Line** tool (bottom-right). Select a vector by clicking its outline, then click any vector **segment** to remove that segment or any visible **node** to remove that point. The tool also works on curved contours and on other compound vector parts; it does not indiscriminately delete every path in a compound object.
+- On **closed contours**, deleting an edge opens the ring at that edge, preserving all remaining segments. On **open contours**, deleting an edge splits it into two open contours. Deleting a node removes that node and reconnects neighbors directly; if a contour becomes too short it is removed. Undo/Redo snapshots are taken before cuts.
+- Cut tool exposes oversized transparent hit paths for easy clicking and node targets draw above the segment hit paths. The actual cut geometry is unchanged except for the explicitly deleted segments/nodes.
+- Open cut contours are **not standalone closed panel perimeters**. Join/combine them into a closed outline before treating them as a complete part cut.
+- Confirm interaction in Raspberry Pi Chromium and inspect SVG export in xTool before laser cutting.
+
 ## Photo-based 2×2 LEGO corner with three holes — build 0.1.30
 
 - Adds **LEGO 2×2 corner · 3 holes** to the Parts Bench. The previous 4-way stud relief, half-pitch corner, end corner, and castle parts are preserved.
