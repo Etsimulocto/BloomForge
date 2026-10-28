@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>BloomForge 0.1.8 · QuarterBitGames</title>
+<title>BloomForge 0.1.9 · QuarterBitGames</title>
 <style>
 :root{--bg:#eaf0f2;--panel:#ffffff;--ink:#243441;--border:#cbd5dd;--accent:#0297a6;--canvas:#ffffff;--grid:#dfe7e9;--button-bg:#ffffff;--button-ink:#243441;--button-border:#cbd5dd;--guide-label:#667785;--selection:#ea5b9f;--canvas-frame:#02a7c3}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px system-ui,Segoe UI,Arial,sans-serif}
@@ -81,8 +81,8 @@ button,input,select{font:inherit}button{border:1px solid var(--button-border);ba
 <section class="section"><h3>FOUR LAYERS</h3><div id="layers"></div><div class="muted">Green and cyan are guides: excluded from manufacturing SVG by default.</div></section>
 <section class="section"><h3>POSITION & DIMENSIONS</h3><div id="properties" class="muted">Select or draw an object to edit it.</div><div class="row"><button id="duplicate">Duplicate</button><button id="delete">Delete</button><button id="undo">Undo</button><button id="redo">Redo</button></div></section>
 
-<section class="tools"><h3>TOOLS · BOTTOM RIGHT</h3><div class="toolgrid" id="tools"><button data-tool="select">Select</button><button data-tool="rect">Rect</button><button data-tool="circle">Circle</button><button data-tool="line">Line</button><button data-tool="slot">Slot</button><button data-tool="arc">Arc</button></div></section>
-</aside><footer class="info"><span id="status">Ready · select a tool · 3 mm snap enabled</span><span class="footerbrand">🪷 BloomForge · BUILD 0.1.8 · QuarterBitGames LLC · Precision Workbench</span></footer></div>
+<section class="tools"><h3>TOOLS · BOTTOM RIGHT</h3><div class="toolgrid" id="tools"><button data-tool="select">Select</button><button data-tool="rect">Rect</button><button data-tool="circle">Circle</button><button data-tool="line">Line</button><button data-tool="slot">Slot</button><button data-tool="arc">Arc</button><button data-tool="vector">Vector</button><button data-tool="nodes">Nodes</button></div></section>
+</aside><footer class="info"><span id="status">Ready · select a tool · 3 mm snap enabled</span><span class="footerbrand">🪷 BloomForge · BUILD 0.1.9 · QuarterBitGames LLC · Precision Workbench</span></footer></div>
 <script>
 'use strict';
 const NS='http://www.w3.org/2000/svg', SHEET=298.45;
@@ -91,7 +91,7 @@ const names={black:'Black · Cut',red:'Red · Score/Etch',green:'Green · Ruler/
 const $=id=>document.getElementById(id);
 const svg=$('drawing'), objects=$('objects'), drafts=$('draft');
 let state={shapes:[],selected:null,tool:'select',layer:'black',step:3,gridMode:'3',customStep:3,snap:true,visible:{black:true,red:true,green:true,cyan:true},theme:'light',themeColors:null};
-let drag=null,history=[],future=[],spaceHeld=false;
+let drag=null,history=[],future=[],spaceHeld=false,vectorDraft=null,activeNode=null;
 const BASE_VIEW={x:0,y:0,w:320,h:320};
 let view={...BASE_VIEW};
 const MIN_ZOOM=0.2, MAX_ZOOM=20;
@@ -119,6 +119,7 @@ function attrShape(s){const a={fill:'none',stroke:colors[s.layer]||colors.black,
  if(k==='circle')return el('circle',{...a,cx:s.x,cy:s.y,r:s.r});
  if(k==='line')return el('line',{...a,x1:s.x,y1:s.y,x2:s.x2,y2:s.y2});
  if(k==='slot')return el('rect',{...a,x:s.x,y:s.y,width:s.w,height:s.h,rx:Math.min(s.h/2,s.w/2),ry:Math.min(s.h/2,s.w/2)});
+ if(k==='vector')return el('path',{...a,d:vectorPath(s)});
  if(k==='arc'){let r=Math.max(.01,Math.hypot(s.x2-s.x,s.y2-s.y)/1.41421356);let d=`M ${s.x} ${s.y2} A ${r} ${r} 0 0 1 ${s.x2} ${s.y}`;return el('path',{...a,d})}
  return el('g');
 }
@@ -129,10 +130,18 @@ function render(){objects.replaceChildren();for(const s of state.shapes){if(!sta
   const hitArea=attrShape(s);hitArea.setAttribute('stroke','transparent');hitArea.setAttribute('stroke-width','14');hitArea.setAttribute('vector-effect','non-scaling-stroke');hitArea.setAttribute('pointer-events',s.kind==='rect'||s.kind==='slot'||s.kind==='circle'?'all':'stroke');
   if(['rect','slot','circle'].includes(s.kind))hitArea.setAttribute('fill','transparent');
   hitArea.style.cursor='grab';objects.append(hitArea);
- }renderProperties();renderTopBar();$('status').textContent=`${state.tool.toUpperCase()} · ${state.shapes.length} shapes · ${state.gridMode==='free'?'FREE drawing':state.step+' mm grid'} · ${state.snap&&state.gridMode!=='free'?'snap ON':'snap OFF'}`;}
+ }if(state.tool==='nodes')renderNodeHandles();
+ renderProperties();renderTopBar();$('status').textContent=`${state.tool.toUpperCase()} · ${state.shapes.length} shapes · ${state.gridMode==='free'?'FREE drawing':state.step+' mm grid'} · ${state.snap&&state.gridMode!=='free'?'snap ON':'snap OFF'}`;}
 // Normalize the editor's X/Y/W/H fields for every primitive.
  // Circles use center X/Y and diameter W/H. Lines/arcs use start X/Y and absolute width/height.
 function dimensions(s){
+ if(s.kind==='vector'){
+  const pts=s.subpaths.flatMap(sub=>sub.points.flatMap(p=>[p,...(p.inX!=null?[{x:p.inX,y:p.inY}]:[]),...(p.outX!=null?[{x:p.outX,y:p.outY}]:[])]));
+  if(!pts.length)return{x:0,y:0,w:0,h:0};
+  const xs=pts.map(p=>p.x),ys=pts.map(p=>p.y),x=Math.min(...xs),y=Math.min(...ys);
+  return{x:round(x),y:round(y),w:round(Math.max(...xs)-x),h:round(Math.max(...ys)-y)};
+ }
+
  if(s.kind==='circle')return{x:s.x,y:s.y,w:round(s.r*2),h:round(s.r*2)};
  if(s.kind==='line'||s.kind==='arc')return{x:s.x,y:s.y,w:round(Math.abs(s.x2-s.x)),h:round(Math.abs(s.y2-s.y))};
  return{x:s.x,y:s.y,w:s.w,h:s.h};
@@ -141,6 +150,22 @@ function updateDimension(id,field,value){
  const s=state.shapes.find(q=>q.id===id);if(!s||!Number.isFinite(value)||Math.abs(value)>1e6)return false;
  if(['w','h'].includes(field)&&value<=0)return false;
  remember();value=round(value);
+ if(s.kind==='vector'){
+  const dim=dimensions(s),source=field==='x'?dim.x:field==='y'?dim.y:field==='w'?dim.w:dim.h;
+  if(['w','h'].includes(field)&&source<=0){history.pop();return false}
+  const transform=(p)=>{
+   if(field==='x')p.x=round(p.x+value-source);
+   if(field==='y')p.y=round(p.y+value-source);
+   if(field==='w')p.x=round(dim.x+(p.x-dim.x)*value/source);
+   if(field==='h')p.y=round(dim.y+(p.y-dim.y)*value/source);
+  };
+  for(const sub of s.subpaths)for(const p of sub.points){
+   transform(p);
+   if(p.inX!=null){const q={x:p.inX,y:p.inY};transform(q);p.inX=q.x;p.inY=q.y}
+   if(p.outX!=null){const q={x:p.outX,y:p.outY};transform(q);p.outX=q.x;p.outY=q.y}
+  }
+  render();return true;
+ }
  if(s.kind==='circle'){
   if(field==='w'||field==='h')s.r=round(value/2);
   else s[field]=value;
@@ -172,7 +197,7 @@ function renderProperties(){
  const s=state.shapes.find(x=>x.id===state.selected);const c=$('properties');c.replaceChildren();
  if(!s){c.textContent='Click a shape or its edge to select. Its dimensions appear here and in the top bar.';return}
  const head=document.createElement('div');head.className='selection-head';head.textContent=s.kind.toUpperCase()+' · '+s.layer.toUpperCase();c.append(head);
- const note=document.createElement('div');note.className='selected-note';note.textContent=s.kind==='circle'?'X/Y = center · W/H = diameter':(s.kind==='line'||s.kind==='arc'?'X/Y = start point · W/H = span':'X/Y = top-left corner');c.append(note);
+ const note=document.createElement('div');note.className='selected-note';note.textContent=s.kind==='vector'?'X/Y = vector bounding-box corner · W/H = bounding-box size':s.kind==='circle'?'X/Y = center · W/H = diameter':(s.kind==='line'||s.kind==='arc'?'X/Y = start point · W/H = span':'X/Y = top-left corner');c.append(note);
  const a=document.createElement('div');a.className='subhead';a.textContent='POSITION · mm';c.append(a);
  c.append(numericField(s.id,'x','X (mm)'),numericField(s.id,'y','Y (mm)'));
  const b=document.createElement('div');b.className='subhead';b.textContent='DIMENSIONS · mm';c.append(b);
@@ -180,14 +205,86 @@ function renderProperties(){
  const row=document.createElement('label');row.className='field';row.textContent='Layer';const sel=document.createElement('select');
  for(const key of Object.keys(colors)){const o=document.createElement('option');o.value=key;o.textContent=names[key];o.selected=s.layer===key;sel.append(o)}
  sel.onchange=()=>{remember();s.layer=sel.value;render()};row.append(sel);c.append(row);
+ if(s.kind==='vector'){
+  const sub=document.createElement('div');sub.className='subhead';sub.textContent='COMPOUND VECTOR · PATHS';c.append(sub);
+  const desc=document.createElement('div');desc.className='selected-note';desc.textContent=s.subpaths.length+' contours · '+s.subpaths.reduce((n,a)=>n+a.points.length,0)+' nodes. Use Nodes tool to drag points and Bézier handles.';c.append(desc);
+  const actions=document.createElement('div');actions.className='row';
+  const add=document.createElement('button');add.textContent='+ New contour';add.onclick=()=>{remember();let d=dimensions(s);s.subpaths.push({closed:false,points:[{x:round(d.x+6),y:round(d.y+6)},{x:round(d.x+24),y:round(d.y+6)}]});activeNode={sub:s.subpaths.length-1,index:1};setTool('nodes')};
+  const close=document.createElement('button');close.textContent='Toggle closed';close.onclick=()=>{const subIndex=activeNode?.sub??0;const subp=s.subpaths[subIndex];if(!subp)return;remember();subp.closed=!subp.closed;render()};
+  const curve=document.createElement('button');curve.textContent='Curve node';curve.onclick=()=>{const loc=activeNode||{sub:0,index:0},p=s.subpaths[loc.sub]?.points[loc.index];if(!p)return;remember();if(p.inX!=null){delete p.inX;delete p.inY;delete p.outX;delete p.outY}else{p.inX=round(p.x-6);p.inY=p.y;p.outX=round(p.x+6);p.outY=p.y}render()};
+  const insert=document.createElement('button');insert.textContent='+ Next node';insert.onclick=()=>{const loc=activeNode||{sub:0,index:0},subp=s.subpaths[loc.sub];if(!subp)return;const p=subp.points[loc.index],next=subp.points[loc.index+1]||{x:p.x+12,y:p.y+12};remember();subp.points.splice(loc.index+1,0,{x:round((p.x+next.x)/2),y:round((p.y+next.y)/2)});activeNode={sub:loc.sub,index:loc.index+1};render()};
+  const del=document.createElement('button');del.textContent='Delete node';del.onclick=()=>{const loc=activeNode,subp=loc&&s.subpaths[loc.sub];if(!subp||subp.points.length<=2)return;remember();subp.points.splice(loc.index,1);activeNode={sub:loc.sub,index:Math.max(0,loc.index-1)};render()};
+  actions.append(add,close,curve,insert,del);c.append(actions);
+ }
 }
-function setTool(t){state.tool=t;document.querySelectorAll('[data-tool]').forEach(b=>b.classList.toggle('active',b.dataset.tool===t));render()}
+function setTool(t){if(state.tool==='vector'&&t!=='vector'&&vectorDraft)finishVector();state.tool=t;document.querySelectorAll('[data-tool]').forEach(b=>b.classList.toggle('active',b.dataset.tool===t));render()}
 function shapeBetween(a,b,kind,layer=state.layer){let x=Math.min(a.x,b.x),y=Math.min(a.y,b.y),w=Math.max(state.step,Math.abs(b.x-a.x)),h=Math.max(state.step,Math.abs(b.y-a.y));if(kind==='circle')return{id:uid(),kind,layer,x:a.x,y:a.y,r:Math.max(.5,Math.hypot(b.x-a.x,b.y-a.y))};if(kind==='line'||kind==='arc')return{id:uid(),kind,layer,x:a.x,y:a.y,x2:b.x,y2:b.y};return{id:uid(),kind,layer,x,y,w,h}}
+
+function vectorPath(s){
+ const chunks=[];
+ for(const sub of s.subpaths){
+  if(!sub.points.length)continue;
+  const pts=sub.points;chunks.push('M '+pts[0].x+' '+pts[0].y);
+  for(let i=1;i<pts.length+(sub.closed?1:0);i++){
+   const prev=pts[(i-1)%pts.length],p=pts[i%pts.length];
+   if(prev.outX!=null||p.inX!=null){
+    const a=prev.outX!=null?[prev.outX,prev.outY]:[prev.x,prev.y];
+    const b=p.inX!=null?[p.inX,p.inY]:[p.x,p.y];
+    chunks.push('C '+a.join(' ')+' '+b.join(' ')+' '+p.x+' '+p.y);
+   }else chunks.push('L '+p.x+' '+p.y);
+  }
+  if(sub.closed)chunks.push('Z');
+ }
+ return chunks.join(' ');
+}
+function renderNodeHandles(){
+ const s=state.shapes.find(v=>v.id===state.selected&&v.kind==='vector');
+ if(!s)return;
+ for(let si=0;si<s.subpaths.length;si++){
+  const sub=s.subpaths[si];
+  for(let ni=0;ni<sub.points.length;ni++){
+   const p=sub.points[ni],selected=activeNode?.sub===si&&activeNode?.index===ni;
+   for(const mode of ['in','out']){
+    const x=p[mode+'X'],y=p[mode+'Y'];if(x==null)continue;
+    objects.append(el('line',{x1:p.x,y1:p.y,x2:x,y2:y,stroke:'var(--selection)','stroke-width':'.35','pointer-events':'none'}));
+    const handle=el('circle',{cx:x,cy:y,r:'3.5',fill:'var(--panel)',stroke:'var(--selection)','stroke-width':'1','vector-effect':'non-scaling-stroke','data-handle':mode,'data-sub':si,'data-node':ni,'pointer-events':'all'});
+    handle.style.cursor='crosshair';objects.append(handle);
+   }
+   const handle=el('circle',{cx:p.x,cy:p.y,r:'4.2',fill:selected?'var(--selection)':'var(--panel)',stroke:'var(--accent)','stroke-width':'1.4','vector-effect':'non-scaling-stroke','data-handle':'node','data-sub':si,'data-node':ni,'pointer-events':'all'});
+   handle.style.cursor='move';objects.append(handle);
+  }
+ }
+}
+function finishVector(){
+ if(!vectorDraft)return;
+ if(vectorDraft.points.length>=2){remember();const s={id:uid(),kind:'vector',layer:state.layer,subpaths:[{closed:false,points:vectorDraft.points}]};state.shapes.push(s);state.selected=s.id;activeNode={sub:0,index:vectorDraft.points.length-1};}
+ vectorDraft=null;drafts.replaceChildren();setTool('nodes');
+}
+function draftVector(){
+ drafts.replaceChildren();if(!vectorDraft)return;
+ const p=el('path',{d:vectorPath({subpaths:[{points:vectorDraft.points,closed:false}]}),stroke:'var(--selection)','stroke-width':'1',fill:'none','pointer-events':'none'});drafts.append(p);
+ for(const n of vectorDraft.points)drafts.append(el('circle',{cx:n.x,cy:n.y,r:'2',fill:'var(--selection)','pointer-events':'none'}));
+}
 function hit(ev){return ev.target.closest('[data-id]')?.getAttribute('data-id')}
-svg.addEventListener('pointerdown',ev=>{if(ev.button===1||(ev.button===0&&spaceHeld)){drag={kind:'pan',lastX:ev.clientX,lastY:ev.clientY};svg.setPointerCapture(ev.pointerId);ev.preventDefault();return}if(ev.button!==0)return;const p=point(ev),id=hit(ev);if(state.tool==='select'){state.selected=id||null;if(id){remember();let s=state.shapes.find(q=>q.id===id);drag={kind:'move',start:p,original:copy(s),id}}else drag=null;render()}else{drag={kind:'draw',start:p,current:p};drafts.replaceChildren();}svg.setPointerCapture(ev.pointerId)});
-svg.addEventListener('pointermove',ev=>{if(drag?.kind==='pan'){panPixels(ev.clientX-drag.lastX,ev.clientY-drag.lastY);drag.lastX=ev.clientX;drag.lastY=ev.clientY;return}const p=point(ev);if(!drag)return;if(drag.kind==='move'){const s=state.shapes.find(q=>q.id===drag.id);if(!s)return;const dx=p.x-drag.start.x,dy=p.y-drag.start.y;s.x=round(drag.original.x+dx);s.y=round(drag.original.y+dy);if('x2'in s){s.x2=round(drag.original.x2+dx);s.y2=round(drag.original.y2+dy)}render()}else{drag.current=p;drafts.replaceChildren(attrShape(shapeBetween(drag.start,p,state.tool)))}});
+svg.addEventListener('pointerdown',ev=>{if(ev.button===1||(ev.button===0&&spaceHeld)){drag={kind:'pan',lastX:ev.clientX,lastY:ev.clientY};svg.setPointerCapture(ev.pointerId);ev.preventDefault();return}if(ev.button!==0)return;
+ if(state.tool==='vector'){const p=point(ev);if(!vectorDraft)vectorDraft={points:[]};vectorDraft.points.push({x:p.x,y:p.y});draftVector();ev.preventDefault();return}
+ if(state.tool==='nodes'){
+  const nodeTarget=ev.target.closest('[data-handle]');
+  if(nodeTarget){const si=Number(nodeTarget.getAttribute('data-sub')),ni=Number(nodeTarget.getAttribute('data-node')),mode=nodeTarget.getAttribute('data-handle');activeNode={sub:si,index:ni};remember();drag={kind:'node',id:state.selected,sub:si,index:ni,mode};svg.setPointerCapture(ev.pointerId);ev.preventDefault();return}
+ }
+ const p=point(ev),id=hit(ev);if(state.tool==='select'||state.tool==='nodes'){state.selected=id||null;if(id){let s=state.shapes.find(q=>q.id===id);if(state.tool==='select'){remember();drag={kind:'move',start:p,original:copy(s),id}}else drag=null;}else drag=null;render()}else{drag={kind:'draw',start:p,current:p};drafts.replaceChildren();}svg.setPointerCapture(ev.pointerId)});
+svg.addEventListener('pointermove',ev=>{if(drag?.kind==='pan'){panPixels(ev.clientX-drag.lastX,ev.clientY-drag.lastY);drag.lastX=ev.clientX;drag.lastY=ev.clientY;return}
+ if(drag?.kind==='node'){const s=state.shapes.find(q=>q.id===drag.id),node=s?.subpaths[drag.sub]?.points[drag.index];if(node){const p=point(ev);
+  if(drag.mode==='node'){const dx=p.x-node.x,dy=p.y-node.y;node.x=p.x;node.y=p.y;for(const h of ['in','out'])if(node[h+'X']!=null){node[h+'X']=round(node[h+'X']+dx);node[h+'Y']=round(node[h+'Y']+dy)}}
+  else{node[drag.mode+'X']=p.x;node[drag.mode+'Y']=p.y}
+  render();}return}
+ const p=point(ev);if(!drag)return;if(drag.kind==='move'){const s=state.shapes.find(q=>q.id===drag.id);if(!s)return;const dx=p.x-drag.start.x,dy=p.y-drag.start.y;
+ if(s.kind==='vector'){s.subpaths=copy(drag.original.subpaths);for(const sub of s.subpaths)for(const n of sub.points){n.x=round(n.x+dx);n.y=round(n.y+dy);for(const h of ['in','out'])if(n[h+'X']!=null){n[h+'X']=round(n[h+'X']+dx);n[h+'Y']=round(n[h+'Y']+dy)}}}
+ else{s.x=round(drag.original.x+dx);s.y=round(drag.original.y+dy);if('x2'in s){s.x2=round(drag.original.x2+dx);s.y2=round(drag.original.y2+dy)}}render()}else{drag.current=p;drafts.replaceChildren(attrShape(shapeBetween(drag.start,p,state.tool)))}});
 svg.addEventListener('pointerup',ev=>{if(!drag)return;if(drag.kind==='pan'){drag=null;return}if(drag.kind==='draw'){const p=point(ev),dist=Math.hypot(p.x-drag.start.x,p.y-drag.start.y);if(dist>=.4){remember();let s=shapeBetween(drag.start,p,state.tool);state.shapes.push(s);state.selected=s.id}drafts.replaceChildren();}drag=null;render()});
 svg.addEventListener('pointercancel',()=>{drag=null;drafts.replaceChildren();render()});
+svg.addEventListener('dblclick',e=>{if(state.tool==='vector'){e.preventDefault();finishVector()}});
+
 svg.addEventListener('auxclick',e=>{if(e.button===1)e.preventDefault()});
 svg.addEventListener('contextmenu',e=>{if(spaceHeld)e.preventDefault()});
 // Handle wheel at the whole central viewport, not just the SVG child.
@@ -317,6 +414,8 @@ window.addEventListener('keydown',e=>{
  // Capture at window level so Chromium never scales the entire BloomForge UI.
  // Preserve typing in editable fields and browser shortcuts unrelated to canvas navigation.
  if(['INPUT','SELECT','TEXTAREA'].includes(document.activeElement.tagName))return;
+if(state.tool==='vector'&&e.key==='Enter'){e.preventDefault();finishVector();return}
+if(state.tool==='vector'&&e.key==='Escape'){e.preventDefault();vectorDraft=null;drafts.replaceChildren();setTool('select');return}
 if(e.code==='Space'&&!e.ctrlKey&&!e.metaKey){spaceHeld=true;e.preventDefault();return}
 if(e.ctrlKey||e.metaKey){
  const isPlus=e.code==='Equal'||e.code==='NumpadAdd'||['+','=','Add'].includes(e.key);
@@ -330,7 +429,7 @@ if((e.key==='Delete'||e.key==='Backspace')&&state.selected)$('delete').click()},
 function download(text,filename,type){let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type}));a.download=filename;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),5000)}
 $('save').onclick=()=>download(JSON.stringify({format:'BloomForge',version:1,material:{thicknessMm:3,sheetMm:SHEET},state},null,2),'bloomforge-project.json','application/json');
 $('open').onclick=()=>$('file').click();
-$('file').onchange=async e=>{let file=e.target.files[0];if(!file)return;try{let parsed=JSON.parse(await file.text());if(parsed.format!=='BloomForge'||parsed.version!==1||!Array.isArray(parsed.state?.shapes))throw Error('Not a BloomForge v1 project');for(let s of parsed.state.shapes){if(!['rect','circle','slot','line','arc'].includes(s.kind)||!colors[s.layer])throw Error('Unknown shape/layer')}state={...state,...parsed.state,selected:null};state.customStep=Number.isFinite(state.customStep)?state.customStep:3;state.gridMode=['3','1','0.5','custom','free'].includes(state.gridMode)?state.gridMode:(['3','1','0.5'].includes(String(state.step))?String(state.step):'custom');if(!Number.isFinite(state.step)||state.step<=0)state.step=3;refreshGrid();applyColors(state.theme,state.themeColors);history=[];future=[];render()}catch(err){alert('Could not open project: '+err.message)}e.target.value=''};
+$('file').onchange=async e=>{let file=e.target.files[0];if(!file)return;try{let parsed=JSON.parse(await file.text());if(parsed.format!=='BloomForge'||parsed.version!==1||!Array.isArray(parsed.state?.shapes))throw Error('Not a BloomForge v1 project');for(let s of parsed.state.shapes){if(!['rect','circle','slot','line','arc','vector'].includes(s.kind)||!colors[s.layer]||(s.kind==='vector'&&(!Array.isArray(s.subpaths)||!s.subpaths.every(sub=>Array.isArray(sub.points)&&sub.points.every(p=>Number.isFinite(p.x)&&Number.isFinite(p.y))))))throw Error('Unknown shape/layer')}state={...state,...parsed.state,selected:null};state.customStep=Number.isFinite(state.customStep)?state.customStep:3;state.gridMode=['3','1','0.5','custom','free'].includes(state.gridMode)?state.gridMode:(['3','1','0.5'].includes(String(state.step))?String(state.step):'custom');if(!Number.isFinite(state.step)||state.step<=0)state.step=3;refreshGrid();applyColors(state.theme,state.themeColors);history=[];future=[];render()}catch(err){alert('Could not open project: '+err.message)}e.target.value=''};
 $('new').onclick=()=>{if(state.shapes.length&&!confirm('Start a new blank project? Unsaved geometry will be lost.'))return;remember();state.shapes=[];state.selected=null;render()};
 $('export').onclick=()=>{const guides=$('exportGuides').checked,red=$('exportRed').checked;const permitted=new Set(['black',...(red?['red']:[]),...(guides?['green','cyan']:[])]);const included=state.shapes.filter(s=>permitted.has(s.layer));let root=el('svg',{xmlns:NS,width:'298.45mm',height:'298.45mm',viewBox:'10 10 298.45 298.45'});root.append(document.createComment('BloomForge export. Confirm xTool laser operations before cutting.'));for(let key of Object.keys(colors)){if(!permitted.has(key))continue;let group=el('g',{'data-layer':key,id:'bloomforge-'+key});for(let s of included.filter(x=>x.layer===key))group.append(attrShape(s));root.append(group)}let text=new XMLSerializer().serializeToString(root);download('<?xml version="1.0" encoding="UTF-8"?>\n'+text,'bloomforge-cut-layout.svg','image/svg+xml')};
 const ticks=$('ticks');for(let mm=0;mm<=300;mm+=30){let x=10+mm;if(x<=310){let top=el('text',{x,y:7,'font-size':'4','text-anchor':'middle',fill:'var(--guide-label)'});top.textContent=mm;ticks.append(top)}let y=10+mm;if(y<=310){let left=el('text',{x:7,y:y+1,'font-size':'4','text-anchor':'end',fill:'var(--ink)'});left.textContent=mm;ticks.append(left)}}
