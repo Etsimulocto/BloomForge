@@ -1,3 +1,13 @@
+## Photo-based 2×2 LEGO corner with three holes — build 0.1.30
+
+- Adds **LEGO 2×2 corner · 3 holes** to the Parts Bench. The previous 4-way stud relief, half-pitch corner, end corner, and castle parts are preserved.
+- One compound Black Cut vector with **four closed contours**: a stepped **L-shaped outside perimeter** and **three 4.8 mm diameter hole contours**. The upper-right fourth-stud location is open/cut away.
+- Nominal **16 × 16 mm** LEGO 2×2 footprint with **8 mm hole center pitch**. Default overall SVG bounds: `(26,26)`–`(42,42)`; stud holes centered at `(30,30)`, `(30,38)`, `(38,38)`. The corner normally occupied by the fourth stud `(38,30)` is cut away.
+- The L-shaped cutout turns through a **2.4 mm-radius cubic Bézier inside corner**. This is an inferred design from the supplied photograph, not a dimensional trace.
+- As one vector, the part can be selected, rotated (pivot on stud `(30,30)`), moved with 8 mm LEGO stud-grid snapping, duplicated with 8 mm offset, saved and exported.
+- W/H resize fields are disabled on this specific fixed-size pattern to protect the **4.8 mm holes** and **8 mm spacing**. Individual nodes and Bézier handles remain editable through the Nodes tool for custom geometry.
+- Cutting caution: the outline and all three holes are actual fabrication cuts; check xTool import, kerf, minimum bridge material, and physical LEGO press-fit on scrap before production.
+
 ## Full-pitch LEGO mitred end corner — build 0.1.29
 
 - Adds **LEGO end corner · mitred 8 mm** to the Parts Bench; preserves both the four-way stud-relief tile and the 4 mm half-pitch corner notch.
