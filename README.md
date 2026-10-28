@@ -28,6 +28,24 @@ sh launch-pi.sh
 
 Alternatively open `index.html` directly in a modern desktop browser. There is **no build step, server, sign-in or Internet requirement** for editing. The Pi launcher opens Chromium in an app-style window, not a native packaged GUI or headless service. JSON and SVG files download through Chromium; keep copies of your designs.
 
+## Raspberry Pi home-screen shortcut and app icon
+
+BloomForge includes a **one-command desktop shortcut installer** and a fallback SVG icon. To use the **neon lotus icon generated in ChatGPT**, first download the file named **`BloomForge-icon.png`** from the conversation on the Raspberry Pi and save it in **`~/Downloads/`**.
+
+Then run:
+
+```sh
+cd ~/BloomForge
+git pull
+sh install-desktop.sh
+```
+
+The installer makes a **BloomForge.desktop** shortcut on `~/Desktop` (when that folder exists) and registers BloomForge in `~/.local/share/applications`. It uses `~/Downloads/BloomForge-icon.png` as the icon when present; otherwise it uses the bundled `bloomforge-icon.svg` fallback. It copies the downloaded PNG to `~/.local/share/icons/bloomforge.png` so the launcher continues working after Downloads is cleaned.
+
+The launcher starts `launch-pi.sh` and opens BloomForge in its own Chromium application window. On some Raspberry Pi OS desktops, the first run may ask you to **Allow Launching / Execute** the shortcut. No root privileges or system-wide changes are required. Re-running the installer refreshes the shortcut and icon.
+
+**Note:** Changing GitHub files does not itself put the shortcut on a powered-on Raspberry Pi; you must run the installer on that Pi. The full-size neon artwork is shared through ChatGPT as a PNG, not embedded in the Git repository.
+
 ## Current tool map
 
 | Area | Tools / behavior |
