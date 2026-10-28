@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>BloomForge 0.1.15 · QuarterBitGames</title>
+<title>BloomForge 0.1.16 · QuarterBitGames</title>
 <style>
 :root{--bg:#eaf0f2;--panel:#ffffff;--ink:#243441;--border:#cbd5dd;--accent:#0297a6;--canvas:#ffffff;--grid:#dfe7e9;--button-bg:#ffffff;--button-ink:#243441;--button-border:#cbd5dd;--guide-label:#667785;--selection:#ea5b9f;--canvas-frame:#02a7c3}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px system-ui,Segoe UI,Arial,sans-serif}
@@ -88,7 +88,7 @@ button,input,select{font:inherit}button{border:1px solid var(--button-border);ba
 <section class="section"><h3>POSITION & DIMENSIONS</h3><div id="properties" class="muted">Select or draw an object to edit it.</div><div class="row"><button id="duplicate">Duplicate</button><button id="delete">Delete</button><button id="undo">Undo</button><button id="redo">Redo</button></div></section>
 
 <section class="tools"><h3>TOOLS · BOTTOM RIGHT</h3><div class="toolgrid" id="tools"><button data-tool="select">Select</button><button data-tool="rect">Rect</button><button data-tool="circle">Circle</button><button data-tool="line">Line</button><button data-tool="slot">Slot</button><button data-tool="arc">Arc</button><button data-tool="vector">Vector</button><button data-tool="nodes">Nodes</button></div></section>
-</aside><footer class="info"><span id="status">Ready · select a tool · 3 mm snap enabled</span><span class="footerbrand">🪷 BloomForge · BUILD 0.1.15 · QuarterBitGames LLC · Precision Workbench</span></footer></div>
+</aside><footer class="info"><span id="status">Ready · select a tool · 3 mm snap enabled</span><span class="footerbrand">🪷 BloomForge · BUILD 0.1.16 · QuarterBitGames LLC · Precision Workbench</span></footer></div>
 <script>
 'use strict';
 const NS='http://www.w3.org/2000/svg', SHEET=298.45;
@@ -396,6 +396,45 @@ function editPrimitiveHandle(s,original,key,p){
   else{s.x2=p.x;s.y=p.y}
  }
 }
+
+ // Immutable mouse-down geometry drives each drag update, even when a shape is rotated.
+ // In locked mode the paired point moves by the negative displacement of the grabbed point.
+ // This works after arbitrary Free Nodes edits; relocking never jumps a point across the part.
+function applyVectorNodeDrag(shape,baseline,subIndex,nodeIndex,mode,position){
+ const sourceSub=baseline?.subpaths[subIndex],targetSub=shape?.subpaths[subIndex];
+ const base=sourceSub?.points[nodeIndex],node=targetSub?.points[nodeIndex];
+ if(!node||!base)return false;
+ const otherIndex=isSymmetryLocked(shape)?mirroredNodeIndex(sourceSub,nodeIndex):-1;
+ const opposite=otherIndex>=0?targetSub.points[otherIndex]:null,
+       oldOpposite=otherIndex>=0?sourceSub.points[otherIndex]:null;
+ if(mode==='node'){
+  const dx=position.x-base.x,dy=position.y-base.y;
+  node.x=round(position.x);node.y=round(position.y);
+  for(const h of ['in','out'])if(base[h+'X']!=null){
+   node[h+'X']=round(base[h+'X']+dx);node[h+'Y']=round(base[h+'Y']+dy);
+  }
+  if(opposite&&oldOpposite){
+   opposite.x=round(oldOpposite.x-dx);opposite.y=round(oldOpposite.y-dy);
+   for(const h of ['in','out'])if(oldOpposite[h+'X']!=null){
+    opposite[h+'X']=round(oldOpposite[h+'X']-dx);
+    opposite[h+'Y']=round(oldOpposite[h+'Y']-dy);
+   }
+  }
+ }else{
+  const xkey=mode+'X',ykey=mode+'Y';
+  if(base[xkey]==null)return false;
+  const dx=position.x-base[xkey],dy=position.y-base[ykey];
+  node[xkey]=round(position.x);node[ykey]=round(position.y);
+  if(opposite&&oldOpposite){
+   const oppositeHandle=mode==='in'?'out':'in';
+   if(oldOpposite[oppositeHandle+'X']!=null){
+    opposite[oppositeHandle+'X']=round(oldOpposite[oppositeHandle+'X']-dx);
+    opposite[oppositeHandle+'Y']=round(oldOpposite[oppositeHandle+'Y']-dy);
+   }
+  }
+ }
+ return true;
+}
 function renderNodeHandles(){
  const s=state.shapes.find(v=>v.id===state.selected);
  if(!s)return;
@@ -452,43 +491,12 @@ svg.addEventListener('pointermove',ev=>{if(drag?.kind==='pan'){panPixels(ev.clie
   return;
  }
 
+
  if(drag?.kind==='node'){
-  const s=state.shapes.find(q=>q.id===drag.id),original=drag.original;
-  const node=s?.subpaths[drag.sub]?.points[drag.index];
-  const baseline=original?.subpaths[drag.sub]?.points[drag.index];
-  if(node&&baseline){
-   // Work in the ORIGINAL object's coordinate system for the entire drag.
-   // This prevents changing bounding boxes / rotation pivots from feeding back into editing.
-   const p=rotateCoord(point(ev),original,true),sub=s.subpaths[drag.sub],
-         oppositeIndex=isSymmetryLocked(s)?mirroredNodeIndex(sub,drag.index):-1,
-         opposite=oppositeIndex>=0?sub.points[oppositeIndex]:null,
-         originalOpposite=oppositeIndex>=0?original.subpaths[drag.sub].points[oppositeIndex]:null;
-   const oldCenter=shapeCenter(original);
-   if(drag.mode==='node'){
-    const dx=p.x-baseline.x,dy=p.y-baseline.y;
-    node.x=round(p.x);node.y=round(p.y);
-    for(const h of ['in','out'])if(baseline[h+'X']!=null){
-     node[h+'X']=round(baseline[h+'X']+dx);node[h+'Y']=round(baseline[h+'Y']+dy);
-    }
-    if(opposite&&originalOpposite){
-     opposite.x=round(2*oldCenter.x-p.x);opposite.y=round(2*oldCenter.y-p.y);
-     for(const h of ['in','out'])if(originalOpposite[h+'X']!=null){
-      opposite[h+'X']=round(originalOpposite[h+'X']-dx);
-      opposite[h+'Y']=round(originalOpposite[h+'Y']-dy);
-     }
-    }
-   }else{
-    const xkey=drag.mode+'X',ykey=drag.mode+'Y';
-    node[xkey]=round(p.x);node[ykey]=round(p.y);
-    if(opposite&&originalOpposite){
-     const oppositeHandle=drag.mode==='in'?'out':'in';
-     if(originalOpposite[oppositeHandle+'X']!=null){
-      opposite[oppositeHandle+'X']=round(originalOpposite[oppositeHandle+'X']-(p.x-baseline[xkey]));
-      opposite[oppositeHandle+'Y']=round(originalOpposite[oppositeHandle+'Y']-(p.y-baseline[ykey]));
-     }
-    }
-   }
-   render();
+  const shape=state.shapes.find(q=>q.id===drag.id);
+  if(shape&&drag.original){
+   const p=rotateCoord(point(ev),drag.original,true);
+   if(applyVectorNodeDrag(shape,drag.original,drag.sub,drag.index,drag.mode,p))render();
   }
   return;
  }
