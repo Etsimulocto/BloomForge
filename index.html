@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>BloomForge 0.1.13 · QuarterBitGames</title>
+<title>BloomForge 0.1.14 · QuarterBitGames</title>
 <style>
 :root{--bg:#eaf0f2;--panel:#ffffff;--ink:#243441;--border:#cbd5dd;--accent:#0297a6;--canvas:#ffffff;--grid:#dfe7e9;--button-bg:#ffffff;--button-ink:#243441;--button-border:#cbd5dd;--guide-label:#667785;--selection:#ea5b9f;--canvas-frame:#02a7c3}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px system-ui,Segoe UI,Arial,sans-serif}
@@ -87,7 +87,7 @@ button,input,select{font:inherit}button{border:1px solid var(--button-border);ba
 <section class="section"><h3>POSITION & DIMENSIONS</h3><div id="properties" class="muted">Select or draw an object to edit it.</div><div class="row"><button id="duplicate">Duplicate</button><button id="delete">Delete</button><button id="undo">Undo</button><button id="redo">Redo</button></div></section>
 
 <section class="tools"><h3>TOOLS · BOTTOM RIGHT</h3><div class="toolgrid" id="tools"><button data-tool="select">Select</button><button data-tool="rect">Rect</button><button data-tool="circle">Circle</button><button data-tool="line">Line</button><button data-tool="slot">Slot</button><button data-tool="arc">Arc</button><button data-tool="vector">Vector</button><button data-tool="nodes">Nodes</button></div></section>
-</aside><footer class="info"><span id="status">Ready · select a tool · 3 mm snap enabled</span><span class="footerbrand">🪷 BloomForge · BUILD 0.1.13 · QuarterBitGames LLC · Precision Workbench</span></footer></div>
+</aside><footer class="info"><span id="status">Ready · select a tool · 3 mm snap enabled</span><span class="footerbrand">🪷 BloomForge · BUILD 0.1.14 · QuarterBitGames LLC · Precision Workbench</span></footer></div>
 <script>
 'use strict';
 const NS='http://www.w3.org/2000/svg', SHEET=298.45;
@@ -430,7 +430,9 @@ svg.addEventListener('pointerdown',ev=>{if(ev.button===1||(ev.button===0&&spaceH
     if(!shape)return;
     state.selected=id;remember();drag={kind:'primitive-node',id,key:primitive,original:copy(shape)};
    }else{
-    activeNode={sub:si,index:ni};remember();drag={kind:'node',id:state.selected,sub:si,index:ni,mode};
+    activeNode={sub:si,index:ni};remember();
+    const shape=state.shapes.find(q=>q.id===state.selected);
+    drag={kind:'node',id:state.selected,sub:si,index:ni,mode,original:copy(shape)};
    }
    svg.setPointerCapture(ev.pointerId);ev.preventDefault();return;
   }
@@ -442,29 +444,47 @@ svg.addEventListener('pointermove',ev=>{if(drag?.kind==='pan'){panPixels(ev.clie
   if(s){editPrimitiveHandle(s,drag.original,drag.key,rotateCoord(point(ev),drag.original,true));render()}
   return;
  }
- if(drag?.kind==='node'){const s=state.shapes.find(q=>q.id===drag.id),node=s?.subpaths[drag.sub]?.points[drag.index];if(node){const p=rotateCoord(point(ev),s,true);
-  if(drag.mode==='node'){
-   const dx=p.x-node.x,dy=p.y-node.y;
-   node.x=p.x;node.y=p.y;
-   for(const h of ['in','out'])if(node[h+'X']!=null){node[h+'X']=round(node[h+'X']+dx);node[h+'Y']=round(node[h+'Y']+dy)}
-   if(isSymmetryLocked(s)){
-    const sub=s.subpaths[drag.sub],mirrorIndex=mirroredNodeIndex(sub,drag.index);
-    if(mirrorIndex>=0){const other=sub.points[mirrorIndex];
-     other.x=round(other.x-dx);other.y=round(other.y-dy);
-     for(const h of ['in','out'])if(other[h+'X']!=null){other[h+'X']=round(other[h+'X']-dx);other[h+'Y']=round(other[h+'Y']-dy)}
+
+ if(drag?.kind==='node'){
+  const s=state.shapes.find(q=>q.id===drag.id),original=drag.original;
+  const node=s?.subpaths[drag.sub]?.points[drag.index];
+  const baseline=original?.subpaths[drag.sub]?.points[drag.index];
+  if(node&&baseline){
+   // Work in the ORIGINAL object's coordinate system for the entire drag.
+   // This prevents changing bounding boxes / rotation pivots from feeding back into editing.
+   const p=rotateCoord(point(ev),original,true),sub=s.subpaths[drag.sub],
+         oppositeIndex=isSymmetryLocked(s)?mirroredNodeIndex(sub,drag.index):-1,
+         opposite=oppositeIndex>=0?sub.points[oppositeIndex]:null,
+         originalOpposite=oppositeIndex>=0?original.subpaths[drag.sub].points[oppositeIndex]:null;
+   const oldCenter=shapeCenter(original);
+   if(drag.mode==='node'){
+    const dx=p.x-baseline.x,dy=p.y-baseline.y;
+    node.x=round(p.x);node.y=round(p.y);
+    for(const h of ['in','out'])if(baseline[h+'X']!=null){
+     node[h+'X']=round(baseline[h+'X']+dx);node[h+'Y']=round(baseline[h+'Y']+dy);
+    }
+    if(opposite&&originalOpposite){
+     opposite.x=round(2*oldCenter.x-p.x);opposite.y=round(2*oldCenter.y-p.y);
+     for(const h of ['in','out'])if(originalOpposite[h+'X']!=null){
+      opposite[h+'X']=round(originalOpposite[h+'X']-dx);
+      opposite[h+'Y']=round(originalOpposite[h+'Y']-dy);
+     }
+    }
+   }else{
+    const xkey=drag.mode+'X',ykey=drag.mode+'Y';
+    node[xkey]=round(p.x);node[ykey]=round(p.y);
+    if(opposite&&originalOpposite){
+     const oppositeHandle=drag.mode==='in'?'out':'in';
+     if(originalOpposite[oppositeHandle+'X']!=null){
+      opposite[oppositeHandle+'X']=round(originalOpposite[oppositeHandle+'X']-(p.x-baseline[xkey]));
+      opposite[oppositeHandle+'Y']=round(originalOpposite[oppositeHandle+'Y']-(p.y-baseline[ykey]));
+     }
     }
    }
-  }else{
-   const dx=p.x-node[drag.mode+'X'],dy=p.y-node[drag.mode+'Y'];
-   node[drag.mode+'X']=p.x;node[drag.mode+'Y']=p.y;
-   if(isSymmetryLocked(s)){
-    const sub=s.subpaths[drag.sub],mirrorIndex=mirroredNodeIndex(sub,drag.index);
-    if(mirrorIndex>=0){const other=sub.points[mirrorIndex],opposite=drag.mode==='in'?'out':'in';
-     if(other[opposite+'X']!=null){other[opposite+'X']=round(other[opposite+'X']-dx);other[opposite+'Y']=round(other[opposite+'Y']-dy)}
-    }
-   }
+   render();
   }
-  render();}return}
+  return;
+ }
  const p=point(ev);if(!drag)return;if(drag.kind==='move'){const s=state.shapes.find(q=>q.id===drag.id);if(!s)return;const dx=p.x-drag.start.x,dy=p.y-drag.start.y;
  if(s.kind==='vector'){s.subpaths=copy(drag.original.subpaths);for(const sub of s.subpaths)for(const n of sub.points){n.x=round(n.x+dx);n.y=round(n.y+dy);for(const h of ['in','out'])if(n[h+'X']!=null){n[h+'X']=round(n[h+'X']+dx);n[h+'Y']=round(n[h+'Y']+dy)}}}
  else{s.x=round(drag.original.x+dx);s.y=round(drag.original.y+dy);if('x2'in s){s.x2=round(drag.original.x2+dx);s.y2=round(drag.original.y2+dy)}}render()}else{drag.current=p;drafts.replaceChildren(attrShape(shapeBetween(drag.start,p,state.tool)))}});
