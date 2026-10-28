@@ -1,3 +1,11 @@
+## Photo-based LEGO corner notch — build 0.1.27
+
+- Adds **LEGO corner notch · 8×8** as a distinct Parts Bench template. Keeps the earlier **LEGO stud relief · 8×8** untouched.
+- Inspired by the stepped, rounded **outer-end corner cutout** visible in the builder's wood mounting bar photograph; **does not** add the entire bar, slots, or mounting holes.
+- Open four-node vector: straight vertical leg → quarter-circle inward bend → straight horizontal leg, initial width/height **8×8 mm**, with nominal **2.4 mm** corner radius (4.8 mm stud reference). The photograph does not establish exact measured notch dimensions; these are editable defaults.
+- **Stretching via the W/H numeric fields** maintains the 2.4 mm radius while lengthening the straight legs. Moving via X/Y fields preserves the profile; node editing is freeform.
+- Black Cut layer; rotated, duplicated, saved, exported as an open SVG path. Because it is an open edge profile, it must be incorporated into a complete connected outline for production cutting.
+
 ## LEGO stud-center relief tile — build 0.1.26
 
 - Replaces the 0.1.25 **LEGO inner corner** Bench template with **LEGO stud relief · 8×8**, an 8 mm grid-cell shape whose four corners are NOT rounded outward; they are cut INWARD to leave stud clearance.
