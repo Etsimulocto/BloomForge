@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>BloomForge 0.1.4 · QuarterBitGames</title>
+<title>BloomForge 0.1.5 · QuarterBitGames</title>
 <style>
 :root{--bg:#eaf0f2;--panel:#fff;--ink:#243441;--border:#cbd5dd;--accent:#0297a6;--canvas:#fff;--grid:#dfe7e9}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px system-ui,Segoe UI,Arial,sans-serif}
@@ -16,7 +16,7 @@ button,input,select{font:inherit}button{border:1px solid var(--border);backgroun
 .info{grid-column:1/4;grid-row:4;padding:5px 12px;border-top:1px solid var(--border);background:var(--panel);font-size:12px}.section{border-bottom:1px solid var(--border);padding-bottom:11px}.row{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin:7px 0}.right .tools{margin-top:auto}.toolgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.toolgrid button{min-height:38px}.field{display:grid;grid-template-columns:1fr 90px;align-items:center;gap:6px;margin:5px 0}.layer{display:flex;align-items:center;justify-content:space-between;padding:3px 0}.swatch{display:inline-block;width:11px;height:11px;border:1px solid #888;margin-right:5px}.warn{color:#b74b39;font-weight:600}.sheet-label{position:absolute;left:10px;bottom:7px;font-size:11px;opacity:.7;pointer-events:none}@media(max-width:850px){.app{grid-template-columns:115px minmax(250px,1fr) 210px}.bench,.right{padding:7px}.tag{display:none}}@media(max-width:640px){.app{grid-template-columns:90px minmax(200px,1fr);grid-template-rows:50px 57px minmax(0,1fr) 210px 28px}.top,.info,.dimensionbar{grid-column:1/3}.dimensionbar{grid-row:2}.stage,.bench{grid-row:3}.info{grid-row:5}.right{grid-column:1/3;grid-row:4;overflow:auto}.toolgrid{grid-template-columns:repeat(6,1fr)}}
 </style></head>
 <body data-theme="light"><div class="app">
-<header class="top"><span class="brand">🪷 BloomForge</span><strong style="font-size:12px;color:var(--accent);white-space:nowrap">BUILD 0.1.4 · DIMENSIONS</strong><span class="tag">QuarterBitGames LLC · precision workbench 0.1</span><span class="grow"></span><button id="new">New</button><button id="save">Save Project</button><button id="open">Open Project</button><button id="export">Export SVG</button><input id="file" type="file" accept=".json,application/json" hidden></header>
+<header class="top"><span class="brand">🪷 BloomForge</span><strong style="font-size:12px;color:var(--accent);white-space:nowrap">BUILD 0.1.5 · CUSTOM GRID</strong><span class="tag">QuarterBitGames LLC · precision workbench 0.1</span><span class="grow"></span><button id="new">New</button><button id="save">Save Project</button><button id="open">Open Project</button><button id="export">Export SVG</button><input id="file" type="file" accept=".json,application/json" hidden></header>
 <div class="dimensionbar" id="dimensionBar"><span class="barlabel">SELECTED</span><span id="selectedName" class="muted">No object</span><span class="barlabel">POSITION</span><label class="barfield">X <input id="topX" type="number" step="0.01" disabled></label><label class="barfield">Y <input id="topY" type="number" step="0.01" disabled></label><span class="barlabel">DIMENSIONS</span><label class="barfield">W <input id="topW" type="number" min="0.001" step="0.01" disabled></label><label class="barfield">H <input id="topH" type="number" min="0.001" step="0.01" disabled></label><span class="units">mm · Enter to apply</span></div>
 <aside class="bench"><h3>PARTS BENCH</h3><div class="muted">Click a template to place a copy on the sheet.</div><div id="templates"></div><hr><div class="muted">Canvas: 12 × 12 in nominal<br>Sheet: 11.75 × 11.75 in<br>Material: 3 mm plywood</div></aside>
 <main class="stage" id="canvasStage"><div class="paper"><svg id="drawing" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" aria-label="Precision drawing canvas">
@@ -24,7 +24,7 @@ button,input,select{font:inherit}button{border:1px solid var(--border);backgroun
 <rect width="320" height="320" fill="var(--canvas)"/><rect x="10" y="10" width="298.45" height="298.45" fill="url(#grid)" stroke="#06aaca" stroke-width=".7" pointer-events="none"/>
 <g id="ticks"></g><g id="objects"></g><g id="draft"></g></svg><span class="sheet-label">Cyan: 11.75 × 11.75 in wood · x/y in mm</span><div id="zoomHud" aria-live="polite" style="position:absolute;top:9px;right:9px;pointer-events:none;background:var(--panel);border:1px solid var(--border);padding:5px 8px;border-radius:6px;color:var(--ink);font-weight:700">CANVAS 100%</div></div></main>
 <aside class="right">
-<section class="section"><h3>WORKSHOP</h3><div class="row"><label>Theme <select id="theme"><option value="light">Light</option><option value="dark">Dark</option><option value="wood">Wood</option></select></label><label>Grid <select id="step"><option value="3">3 mm</option><option value="1">1 mm</option><option value="0.5">0.5 mm</option></select></label></div><div class="row"><button id="zoomOut" title="Zoom out (Ctrl+-)">−</button><button id="zoomReset" title="Fit canvas (Ctrl+0)">100%</button><button id="zoomIn" title="Zoom in (Ctrl++)">+</button><span class="muted" id="zoomLabel">100%</span></div><div class="muted">Wheel over canvas: zoom drawing only · Ctrl+wheel: zoom drawing only · Shift+wheel: horizontal pan · Middle drag or Space+drag: pan · Ctrl+/−: zoom · Ctrl+0: reset</div><label><input id="snap" type="checkbox" checked> Snap locked</label><label><input id="guides" type="checkbox" checked> Show grid / sheet frame</label></section>
+<section class="section"><h3>WORKSHOP</h3><div class="row"><label>Theme <select id="theme"><option value="light">Light</option><option value="dark">Dark</option><option value="wood">Wood</option></select></label><label>Grid <select id="step"><option value="3">3 mm</option><option value="1">1 mm</option><option value="0.5">0.5 mm</option><option value="custom">Custom</option><option value="free">Free</option></select></label><label>Custom <input type="number" id="customStep" min="0.01" max="1000" step="0.01" value="3.00" style="width:81px" title="Enter grid spacing in millimeters, 0.01 to 1000"></label><span class="muted">mm</span></div><div class="row"><button id="zoomOut" title="Zoom out (Ctrl+-)">−</button><button id="zoomReset" title="Fit canvas (Ctrl+0)">100%</button><button id="zoomIn" title="Zoom in (Ctrl++)">+</button><span class="muted" id="zoomLabel">100%</span></div><div class="muted">Wheel over canvas: zoom drawing only · Ctrl+wheel: zoom drawing only · Shift+wheel: horizontal pan · Middle drag or Space+drag: pan · Ctrl+/−: zoom · Ctrl+0: reset</div><label><input id="snap" type="checkbox" checked> Snap locked</label><label><input id="guides" type="checkbox" checked> Show grid / sheet frame</label></section>
 <section class="section"><h3>FOUR LAYERS</h3><div id="layers"></div><div class="muted">Green and cyan are guides: excluded from manufacturing SVG by default.</div></section>
 <section class="section"><h3>POSITION & DIMENSIONS</h3><div id="properties" class="muted">Select or draw an object to edit it.</div><div class="row"><button id="duplicate">Duplicate</button><button id="delete">Delete</button><button id="undo">Undo</button><button id="redo">Redo</button></div></section>
 <section class="section"><h3>EXPORT SETTINGS</h3><label><input type="checkbox" id="exportRed" checked> Include red Score/Etch</label><label><input type="checkbox" id="exportGuides"> Include green/cyan guides</label><div class="muted">Exported SVG retains millimeter units. Check operation assignment in xTool before firing.</div></section>
@@ -37,7 +37,7 @@ const colors={black:'#222222',red:'#d74141',green:'#269b4d',cyan:'#02a7c3'};
 const names={black:'Black · Cut',red:'Red · Score/Etch',green:'Green · Ruler/Snap',cyan:'Cyan · Alt/Framing'};
 const $=id=>document.getElementById(id);
 const svg=$('drawing'), objects=$('objects'), drafts=$('draft');
-let state={shapes:[],selected:null,tool:'select',layer:'black',step:3,snap:true,visible:{black:true,red:true,green:true,cyan:true},theme:'light'};
+let state={shapes:[],selected:null,tool:'select',layer:'black',step:3,gridMode:'3',customStep:3,snap:true,visible:{black:true,red:true,green:true,cyan:true},theme:'light'};
 let drag=null,history=[],future=[],spaceHeld=false;
 const BASE_VIEW={x:0,y:0,w:320,h:320};
 let view={...BASE_VIEW};
@@ -52,7 +52,7 @@ function panPixels(dx,dy){const r=svg.getBoundingClientRect();if(!r.width||!r.he
 
 const copy=o=>JSON.parse(JSON.stringify(o));const uid=()=>Math.random().toString(36).slice(2,11);
 const round=n=>Math.round(n*1000)/1000;
-const snap=n=>round(state.snap?Math.round(n/state.step)*state.step:n);
+const snap=n=>round(state.snap&&state.gridMode!=='free'?Math.round(n/state.step)*state.step:n);
 const valid=n=>Number.isFinite(n)&&Math.abs(n)<1e6;
 function remember(){history.push(copy(state.shapes));if(history.length>100)history.shift();future=[]}
 function point(ev){const p=rawPoint(ev);return{x:snap(p.x),y:snap(p.y)}}
@@ -72,7 +72,7 @@ function render(){objects.replaceChildren();for(const s of state.shapes){if(!sta
   const hitArea=attrShape(s);hitArea.setAttribute('stroke','transparent');hitArea.setAttribute('stroke-width','14');hitArea.setAttribute('vector-effect','non-scaling-stroke');hitArea.setAttribute('pointer-events',s.kind==='rect'||s.kind==='slot'||s.kind==='circle'?'all':'stroke');
   if(['rect','slot','circle'].includes(s.kind))hitArea.setAttribute('fill','transparent');
   hitArea.style.cursor='grab';objects.append(hitArea);
- }renderProperties();renderTopBar();$('status').textContent=`${state.tool.toUpperCase()} · ${state.shapes.length} shapes · ${state.step} mm grid · ${state.snap?'snap ON':'snap OFF'}`;}
+ }renderProperties();renderTopBar();$('status').textContent=`${state.tool.toUpperCase()} · ${state.shapes.length} shapes · ${state.gridMode==='free'?'FREE drawing':state.step+' mm grid'} · ${state.snap&&state.gridMode!=='free'?'snap ON':'snap OFF'}`;}
 // Normalize the editor's X/Y/W/H fields for every primitive.
  // Circles use center X/Y and diameter W/H. Lines/arcs use start X/Y and absolute width/height.
 function dimensions(s){
@@ -152,8 +152,35 @@ const templates=[['3 mm hole','circle',3,3],['2.5 mm hole','circle',2.5,2.5],['6
 for(const [title,kind,w,h,layer] of templates){let b=document.createElement('button');b.className='template';b.textContent=title;b.onclick=()=>place(kind,w,h,layer);$('templates').append(b)}
 for(let key of Object.keys(colors)){let row=document.createElement('div');row.className='layer';let label=document.createElement('label');let check=document.createElement('input');check.type='checkbox';check.checked=true;check.onchange=()=>{state.visible[key]=check.checked;render()};let dot=document.createElement('span');dot.className='swatch';dot.style.background=colors[key];label.append(check,dot,document.createTextNode(names[key]));let radio=document.createElement('input');radio.type='radio';radio.name='activeLayer';radio.title='Active drawing layer';radio.checked=key==='black';radio.onchange=()=>state.layer=key;row.append(label,radio);$('layers').append(row)}
 for(let b of document.querySelectorAll('[data-tool]'))b.onclick=()=>setTool(b.dataset.tool);
-$('step').onchange=e=>{state.step=Number(e.target.value);$('grid').setAttribute('width',state.step);$('grid').setAttribute('height',state.step);$('grid').firstElementChild.setAttribute('d',`M ${state.step} 0 H 0 V ${state.step}`);render()};
-$('snap').onchange=e=>{state.snap=e.target.checked;render()};
+function refreshGrid(){
+ const val=state.step;
+ $('grid').setAttribute('width',val);$('grid').setAttribute('height',val);
+ $('grid').firstElementChild.setAttribute('d',`M ${val} 0 H 0 V ${val}`);
+ $('step').value=state.gridMode;
+ $('customStep').value=Number(state.customStep).toFixed(2);
+ $('snap').checked=state.snap&&state.gridMode!=='free';
+ $('snap').disabled=state.gridMode==='free';
+ render();
+}
+$('step').onchange=e=>{
+ const mode=e.target.value;
+ if(mode==='custom'){
+   const val=Number($('customStep').value);
+   if(!Number.isFinite(val)||val<0.01||val>1000){alert('Custom spacing must be between 0.01 and 1000 mm.');refreshGrid();return}
+   state.customStep=round(val);state.step=state.customStep;
+ }else if(mode!=='free'){
+   state.step=Number(mode);
+ }
+ state.gridMode=mode;
+ if(mode!=='free')state.snap=true;
+ refreshGrid();
+};
+$('customStep').addEventListener('change',()=>{
+ const val=Number($('customStep').value);
+ if(!Number.isFinite(val)||val<0.01||val>1000){alert('Enter a spacing from 0.01 to 1000 mm.');refreshGrid();return}
+ state.customStep=round(val);state.step=state.customStep;state.gridMode='custom';state.snap=true;refreshGrid();
+});
+$('snap').onchange=e=>{state.snap=state.gridMode!=='free'&&e.target.checked;refreshGrid()};
 $('theme').onchange=e=>{state.theme=e.target.value;document.body.dataset.theme=state.theme};
 $('guides').onchange=e=>{svg.querySelector('rect[fill="url(#grid)"]').style.display=e.target.checked?'':'none';$('ticks').style.display=e.target.checked?'':'none'};
 $('delete').onclick=()=>{if(!state.selected)return;remember();state.shapes=state.shapes.filter(x=>x.id!==state.selected);state.selected=null;render()};
@@ -177,9 +204,9 @@ if((e.key==='Delete'||e.key==='Backspace')&&state.selected)$('delete').click()},
 function download(text,filename,type){let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type}));a.download=filename;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),5000)}
 $('save').onclick=()=>download(JSON.stringify({format:'BloomForge',version:1,material:{thicknessMm:3,sheetMm:SHEET},state},null,2),'bloomforge-project.json','application/json');
 $('open').onclick=()=>$('file').click();
-$('file').onchange=async e=>{let file=e.target.files[0];if(!file)return;try{let parsed=JSON.parse(await file.text());if(parsed.format!=='BloomForge'||parsed.version!==1||!Array.isArray(parsed.state?.shapes))throw Error('Not a BloomForge v1 project');for(let s of parsed.state.shapes){if(!['rect','circle','slot','line','arc'].includes(s.kind)||!colors[s.layer])throw Error('Unknown shape/layer')}state={...state,...parsed.state,selected:null};$('step').value=String(state.step);$('step').dispatchEvent(new Event('change'));$('snap').checked=state.snap;$('theme').value=state.theme;document.body.dataset.theme=state.theme;history=[];future=[];render()}catch(err){alert('Could not open project: '+err.message)}e.target.value=''};
+$('file').onchange=async e=>{let file=e.target.files[0];if(!file)return;try{let parsed=JSON.parse(await file.text());if(parsed.format!=='BloomForge'||parsed.version!==1||!Array.isArray(parsed.state?.shapes))throw Error('Not a BloomForge v1 project');for(let s of parsed.state.shapes){if(!['rect','circle','slot','line','arc'].includes(s.kind)||!colors[s.layer])throw Error('Unknown shape/layer')}state={...state,...parsed.state,selected:null};state.customStep=Number.isFinite(state.customStep)?state.customStep:3;state.gridMode=['3','1','0.5','custom','free'].includes(state.gridMode)?state.gridMode:(['3','1','0.5'].includes(String(state.step))?String(state.step):'custom');if(!Number.isFinite(state.step)||state.step<=0)state.step=3;refreshGrid();$('theme').value=state.theme;document.body.dataset.theme=state.theme;history=[];future=[];render()}catch(err){alert('Could not open project: '+err.message)}e.target.value=''};
 $('new').onclick=()=>{if(state.shapes.length&&!confirm('Start a new blank project? Unsaved geometry will be lost.'))return;remember();state.shapes=[];state.selected=null;render()};
 $('export').onclick=()=>{const guides=$('exportGuides').checked,red=$('exportRed').checked;const permitted=new Set(['black',...(red?['red']:[]),...(guides?['green','cyan']:[])]);const included=state.shapes.filter(s=>permitted.has(s.layer));let root=el('svg',{xmlns:NS,width:'298.45mm',height:'298.45mm',viewBox:'10 10 298.45 298.45'});root.append(document.createComment('BloomForge export. Confirm xTool laser operations before cutting.'));for(let key of Object.keys(colors)){if(!permitted.has(key))continue;let group=el('g',{'data-layer':key,id:'bloomforge-'+key});for(let s of included.filter(x=>x.layer===key))group.append(attrShape(s));root.append(group)}let text=new XMLSerializer().serializeToString(root);download('<?xml version="1.0" encoding="UTF-8"?>\n'+text,'bloomforge-cut-layout.svg','image/svg+xml')};
 const ticks=$('ticks');for(let mm=0;mm<=300;mm+=30){let x=10+mm;if(x<=310){let top=el('text',{x,y:7,'font-size':'4','text-anchor':'middle',fill:'var(--ink)'});top.textContent=mm;ticks.append(top)}let y=10+mm;if(y<=310){let left=el('text',{x:7,y:y+1,'font-size':'4','text-anchor':'end',fill:'var(--ink)'});left.textContent=mm;ticks.append(left)}}
-setTool('select');resetZoom();
+setTool('select');refreshGrid();resetZoom();
 </script></body></html>
