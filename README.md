@@ -1,3 +1,10 @@
+## Explicit symmetry controls — build 0.1.15
+
+- The top bar has two separate choices: **🔒 Symmetry** and **🔓 Free Nodes**, with the active choice highlighted.
+- Selecting either choice updates the selected part's constraint. You can switch back and forth repeatedly.
+- The part's editable path and other properties are preserved when relocking; relocking does not undo asymmetric edits.
+- Tested the state transition sequence Free → Symmetry → Free → Symmetry in isolation and confirmed that compound-vector node data remains intact. Browser pointer interaction must still be verified on Raspberry Pi.
+
 ## Symmetry-locked drag correction — build 0.1.14
 
 - **Locked must still resize**: mirrored node drags now use the object's geometry at mouse-down rather than repeatedly adjusting from the previous pointer event.
