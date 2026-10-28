@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>BloomForge 0.1.23 · QuarterBitGames</title>
+<title>BloomForge 0.1.24 · QuarterBitGames</title>
 <style>
 :root{--bg:#eaf0f2;--panel:#ffffff;--ink:#243441;--border:#cbd5dd;--accent:#0297a6;--canvas:#ffffff;--grid:#dfe7e9;--button-bg:#ffffff;--button-ink:#243441;--button-border:#cbd5dd;--guide-label:#667785;--selection:#ea5b9f;--canvas-frame:#02a7c3}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px system-ui,Segoe UI,Arial,sans-serif}
@@ -79,16 +79,22 @@ button,input,select{font:inherit}button{border:1px solid var(--button-border);ba
 </div></header>
 <aside class="bench"><h3>PARTS BENCH</h3><div class="muted">Click a template to place a copy on the sheet.</div><div id="templates"></div><hr><div class="muted">Canvas: 12 × 12 in nominal<br>Sheet: 11.75 × 11.75 in<br>Material: 3 mm plywood</div></aside>
 <main class="stage" id="canvasStage"><div class="paper"><svg id="drawing" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" aria-label="Precision drawing canvas">
-<defs><pattern id="grid" width="3" height="3" patternUnits="userSpaceOnUse"><path d="M 3 0 H 0 V 3" fill="none" stroke="var(--grid)" stroke-width=".23"/></pattern></defs>
+<defs><pattern id="grid" width="3" height="3" patternUnits="userSpaceOnUse"><path d="M 3 0 H 0 V 3" fill="none" stroke="var(--grid)" stroke-width=".23"/></pattern>
+<pattern id="legoGrid" x="10" y="10" width="8" height="8" patternUnits="userSpaceOnUse"><circle cx="4" cy="4" r="2.4" fill="none" stroke="var(--selection)" stroke-opacity=".55" stroke-width=".35"/><circle cx="4" cy="4" r=".35" fill="var(--selection)" fill-opacity=".65"/></pattern></defs>
 <rect width="320" height="320" fill="var(--canvas)"/><rect x="10" y="10" width="298.45" height="298.45" fill="url(#grid)" stroke="var(--canvas-frame)" stroke-width=".7" pointer-events="none"/>
+<rect id="legoOverlay" x="10" y="10" width="298.45" height="298.45" fill="url(#legoGrid)" pointer-events="none" style="display:none"/>
 <g id="ticks"></g><g id="objects"></g><g id="draft"></g></svg><span class="sheet-label">Cyan: 11.75 × 11.75 in wood · x/y in mm</span><div id="zoomHud" aria-live="polite" style="position:absolute;top:9px;right:9px;pointer-events:none;background:var(--panel);border:1px solid var(--border);padding:5px 8px;border-radius:6px;color:var(--ink);font-weight:700">CANVAS 100%</div></div></main>
 <aside class="right">
-<section class="section"><h3>WORKSHOP</h3><div class="row"><label>Grid <select id="step"><option value="3">3 mm</option><option value="1">1 mm</option><option value="0.5">0.5 mm</option><option value="custom">Custom</option><option value="free">Free</option></select></label><label>Custom <input type="number" id="customStep" min="0.01" max="1000" step="0.01" value="3.00" style="width:81px" title="Enter grid spacing in millimeters, 0.01 to 1000"></label><span class="muted">mm</span></div><div class="row"><button id="zoomOut" title="Zoom out (Ctrl+-)">−</button><button id="zoomReset" title="Fit canvas (Ctrl+0)">100%</button><button id="zoomIn" title="Zoom in (Ctrl++)">+</button><span class="muted" id="zoomLabel">100%</span></div><div class="muted">Wheel over canvas: zoom drawing only · Ctrl+wheel: zoom drawing only · Shift+wheel: horizontal pan · Middle drag or Space+drag: pan · Ctrl+/−: zoom · Ctrl+0: reset</div><label><input id="snap" type="checkbox" checked> Snap locked</label><label><input id="guides" type="checkbox" checked> Show grid / sheet frame</label></section>
+<section class="section"><h3>WORKSHOP</h3><div class="row"><label>Grid <select id="step"><option value="3">3 mm</option><option value="1">1 mm</option><option value="0.5">0.5 mm</option><option value="custom">Custom</option><option value="free">Free</option></select></label><label>Custom <input type="number" id="customStep" min="0.01" max="1000" step="0.01" value="3.00" style="width:81px" title="Enter grid spacing in millimeters, 0.01 to 1000"></label><span class="muted">mm</span></div><div class="row"><button id="zoomOut" title="Zoom out (Ctrl+-)">−</button><button id="zoomReset" title="Fit canvas (Ctrl+0)">100%</button><button id="zoomIn" title="Zoom in (Ctrl++)">+</button><span class="muted" id="zoomLabel">100%</span></div><div class="muted">Wheel over canvas: zoom drawing only · Ctrl+wheel: zoom drawing only · Shift+wheel: horizontal pan · Middle drag or Space+drag: pan · Ctrl+/−: zoom · Ctrl+0: reset</div><label><input id="snap" type="checkbox" checked> Snap locked</label><label><input id="guides" type="checkbox" checked> Show grid / sheet frame</label>
+<div class="subhead">LEGO · SECONDARY GRID</div><label><input id="legoGridToggle" type="checkbox"> Show 8 mm stud grid</label>
+<div class="muted">Pink rings = 4.8 mm holes at 8 mm centers. Overlay is a guide only; it never exports.</div>
+<div class="row"><button id="legoPlaceMode" type="button">Place / Remove Holes</button></div>
+<div class="muted">In hole mode, click a pink location to place a Black Cut circle; click it again to remove it. Existing 3 mm grid stays independent.</div></section>
 <section class="section"><h3>FOUR LAYERS</h3><div id="layers"></div><div class="muted">Green and cyan are guides: excluded from manufacturing SVG by default.</div></section>
 <section class="section"><h3>POSITION & DIMENSIONS</h3><div class="selected-note" id="symmetryState" aria-live="polite">SELECT A PART</div><div id="properties" class="muted">Select or draw an object to edit it.</div><div class="row"><button id="duplicate">Duplicate</button><button id="delete">Delete</button><button id="undo">Undo</button><button id="redo">Redo</button></div></section>
 
 <section class="tools"><h3>TOOLS · BOTTOM RIGHT</h3><div class="toolgrid" id="tools"><button data-tool="select">Select</button><button data-tool="rect">Rect</button><button data-tool="circle">Circle</button><button data-tool="line">Line</button><button data-tool="slot">Slot</button><button data-tool="arc">Arc</button><button data-tool="vector">Vector</button><button data-tool="nodes">Nodes</button></div></section>
-</aside><footer class="info"><span><span id="status">Ready · select a tool · 3 mm snap enabled</span> · <span id="interactionStatus">Ready for node edits</span></span><span class="footerbrand">🪷 BloomForge · BUILD 0.1.23 · QuarterBitGames LLC · Precision Workbench</span></footer></div>
+</aside><footer class="info"><span><span id="status">Ready · select a tool · 3 mm snap enabled</span> · <span id="interactionStatus">Ready for node edits</span></span><span class="footerbrand">🪷 BloomForge · BUILD 0.1.24 · QuarterBitGames LLC · Precision Workbench</span></footer></div>
 <script>
 'use strict';
 const NS='http://www.w3.org/2000/svg', SHEET=298.45;
@@ -96,7 +102,7 @@ const colors={black:'#222222',red:'#d74141',green:'#269b4d',cyan:'#02a7c3'};
 const names={black:'Black · Cut',red:'Red · Score/Etch',green:'Green · Ruler/Snap',cyan:'Cyan · Alt/Framing'};
 const $=id=>document.getElementById(id);
 const svg=$('drawing'), objects=$('objects'), drafts=$('draft');
-let state={shapes:[],selected:null,tool:'select',layer:'black',step:3,gridMode:'3',customStep:3,snap:true,visible:{black:true,red:true,green:true,cyan:true},theme:'light',themeColors:null};
+let state={shapes:[],selected:null,tool:'select',layer:'black',step:3,gridMode:'3',customStep:3,snap:true,visible:{black:true,red:true,green:true,cyan:true},theme:'light',themeColors:null,legoGridVisible:false};
 let drag=null,history=[],future=[],spaceHeld=false,vectorDraft=null,activeNode=null;
 const BASE_VIEW={x:0,y:0,w:320,h:320};
 let view={...BASE_VIEW};
@@ -154,7 +160,11 @@ function setRotation(raw){
  remember();shape.rotation=round(value===360?0:value);render();
 }
 $('topRotation').addEventListener('change',e=>setRotation(e.target.value));
-function render(){objects.replaceChildren();for(const s of state.shapes){if(!state.visible[s.layer])continue;
+function render(){
+ $('legoOverlay').style.display=state.legoGridVisible?'':'none';
+ $('legoGridToggle').checked=!!state.legoGridVisible;
+ $('legoPlaceMode').classList.toggle('active',state.tool==='lego-hole');
+ objects.replaceChildren();for(const s of state.shapes){if(!state.visible[s.layer])continue;
   const e=applyRotation(attrShape(s),s);e.setAttribute('stroke-width','1.1');e.setAttribute('pointer-events','none');if(s.id===state.selected){e.setAttribute('stroke-width','2.6');e.setAttribute('stroke','var(--selection)');e.setAttribute('stroke-dasharray','2 1')}objects.append(e);
   // A wide transparent hit shape is independent of the fabrication geometry.
   // 14 screen pixels of clickable stroke, plus the interior for closed shapes.
@@ -311,7 +321,8 @@ function renderProperties(){
   actions.append(add,close,curve,insert,del);c.append(actions);
  }
 }
-function setTool(t){if(state.tool==='vector'&&t!=='vector'&&vectorDraft)finishVector();state.tool=t;document.querySelectorAll('[data-tool]').forEach(b=>b.classList.toggle('active',b.dataset.tool===t));render()}
+function setTool(t){if(state.tool==='vector'&&t!=='vector'&&vectorDraft)finishVector();state.tool=t;
+ if(t==='lego-hole')state.legoGridVisible=true;document.querySelectorAll('[data-tool]').forEach(b=>b.classList.toggle('active',b.dataset.tool===t));render()}
 function shapeBetween(a,b,kind,layer=state.layer){let x=Math.min(a.x,b.x),y=Math.min(a.y,b.y),w=Math.max(state.step,Math.abs(b.x-a.x)),h=Math.max(state.step,Math.abs(b.y-a.y));if(kind==='circle')return{id:uid(),kind,layer,x:a.x,y:a.y,r:Math.max(.5,Math.hypot(b.x-a.x,b.y-a.y))};if(kind==='line'||kind==='arc')return{id:uid(),kind,layer,x:a.x,y:a.y,x2:b.x,y2:b.y};return{id:uid(),kind,layer,x,y,w,h}}
 
 function vectorPath(s){
@@ -487,8 +498,32 @@ function beginPrimitiveDrag(ev,shape,key,source){
  $('interactionStatus').textContent='GRAB '+shape.kind.toUpperCase()+' '+key+' · '+(isSymmetryLocked(shape)?'LOCKED':'FREE')+' · '+source;
  svg.setPointerCapture(ev.pointerId);ev.preventDefault();
 }
+// LEGO stud centers are fixed to the physical sheet origin, not to the 3 mm woodworking grid.
+const LEGO_PITCH=8,LEGO_DIAMETER=4.8,LEGO_ORIGIN=14;
+function nearestLegoCenter(p){
+ const ix=Math.round((p.x-LEGO_ORIGIN)/LEGO_PITCH),iy=Math.round((p.y-LEGO_ORIGIN)/LEGO_PITCH);
+ const x=LEGO_ORIGIN+ix*LEGO_PITCH,y=LEGO_ORIGIN+iy*LEGO_PITCH;
+ if(x-LEGO_DIAMETER/2<10||x+LEGO_DIAMETER/2>10+SHEET||
+    y-LEGO_DIAMETER/2<10||y+LEGO_DIAMETER/2>10+SHEET)return null;
+ return{x,y};
+}
+function toggleLegoHole(p){
+ const c=nearestLegoCenter(p);if(!c)return false;
+ const found=state.shapes.find(q=>q.kind==='circle'&&q.layer==='black'&&Math.abs(q.x-c.x)<.01&&Math.abs(q.y-c.y)<.01&&Math.abs(q.r-LEGO_DIAMETER/2)<.01);
+ remember();
+ if(found){state.shapes=state.shapes.filter(q=>q.id!==found.id);if(state.selected===found.id)state.selected=null}
+ else{const hole={id:uid(),kind:'circle',layer:'black',x:c.x,y:c.y,r:LEGO_DIAMETER/2};state.shapes.push(hole);state.selected=hole.id}
+ render();return true;
+}
+$('legoGridToggle').addEventListener('change',e=>{state.legoGridVisible=e.target.checked;render()});
+$('legoPlaceMode').addEventListener('click',()=>setTool(state.tool==='lego-hole'?'select':'lego-hole'));
 function hit(ev){return ev.target.closest('[data-id]')?.getAttribute('data-id')}
 svg.addEventListener('pointerdown',ev=>{if(ev.button===1||(ev.button===0&&spaceHeld)){drag={kind:'pan',lastX:ev.clientX,lastY:ev.clientY};svg.setPointerCapture(ev.pointerId);ev.preventDefault();return}if(ev.button!==0)return;
+ if(state.tool==='lego-hole'){
+   const placed=toggleLegoHole(rawPoint(ev));
+   $('interactionStatus').textContent=placed?'LEGO · 4.8 mm cut hole toggled':'LEGO · outside 8 mm hole grid';
+   ev.preventDefault();return;
+ }
  if(state.tool==='vector'){const p=point(ev);if(!vectorDraft)vectorDraft={points:[]};vectorDraft.points.push({x:p.x,y:p.y});draftVector();ev.preventDefault();return}
  if(state.tool==='nodes'||state.tool==='select'){
   const near=nearbyPrimitiveCorner(ev);
@@ -717,7 +752,7 @@ if((e.key==='Delete'||e.key==='Backspace')&&state.selected)$('delete').click()},
 function download(text,filename,type){let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type}));a.download=filename;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),5000)}
 $('save').onclick=()=>download(JSON.stringify({format:'BloomForge',version:1,material:{thicknessMm:3,sheetMm:SHEET},state},null,2),'bloomforge-project.json','application/json');
 $('open').onclick=()=>$('file').click();
-$('file').onchange=async e=>{let file=e.target.files[0];if(!file)return;try{let parsed=JSON.parse(await file.text());if(parsed.format!=='BloomForge'||parsed.version!==1||!Array.isArray(parsed.state?.shapes))throw Error('Not a BloomForge v1 project');for(let s of parsed.state.shapes){if(!['rect','circle','slot','line','arc','vector'].includes(s.kind)||!colors[s.layer]||(s.kind==='vector'&&(!Array.isArray(s.subpaths)||!s.subpaths.every(sub=>Array.isArray(sub.points)&&sub.points.every(p=>Number.isFinite(p.x)&&Number.isFinite(p.y))))))throw Error('Unknown shape/layer')}state={...state,...parsed.state,selected:null};state.customStep=Number.isFinite(state.customStep)?state.customStep:3;state.gridMode=['3','1','0.5','custom','free'].includes(state.gridMode)?state.gridMode:(['3','1','0.5'].includes(String(state.step))?String(state.step):'custom');if(!Number.isFinite(state.step)||state.step<=0)state.step=3;refreshGrid();applyColors(state.theme,state.themeColors);history=[];future=[];render()}catch(err){alert('Could not open project: '+err.message)}e.target.value=''};
+$('file').onchange=async e=>{let file=e.target.files[0];if(!file)return;try{let parsed=JSON.parse(await file.text());if(parsed.format!=='BloomForge'||parsed.version!==1||!Array.isArray(parsed.state?.shapes))throw Error('Not a BloomForge v1 project');for(let s of parsed.state.shapes){if(!['rect','circle','slot','line','arc','vector'].includes(s.kind)||!colors[s.layer]||(s.kind==='vector'&&(!Array.isArray(s.subpaths)||!s.subpaths.every(sub=>Array.isArray(sub.points)&&sub.points.every(p=>Number.isFinite(p.x)&&Number.isFinite(p.y))))))throw Error('Unknown shape/layer')}state={...state,...parsed.state,selected:null};state.legoGridVisible=!!state.legoGridVisible;state.customStep=Number.isFinite(state.customStep)?state.customStep:3;state.gridMode=['3','1','0.5','custom','free'].includes(state.gridMode)?state.gridMode:(['3','1','0.5'].includes(String(state.step))?String(state.step):'custom');if(!Number.isFinite(state.step)||state.step<=0)state.step=3;refreshGrid();applyColors(state.theme,state.themeColors);history=[];future=[];render()}catch(err){alert('Could not open project: '+err.message)}e.target.value=''};
 $('new').onclick=()=>{if(state.shapes.length&&!confirm('Start a new blank project? Unsaved geometry will be lost.'))return;remember();state.shapes=[];state.selected=null;render()};
 $('export').onclick=()=>{const guides=$('exportGuides').checked,red=$('exportRed').checked;const permitted=new Set(['black',...(red?['red']:[]),...(guides?['green','cyan']:[])]);const included=state.shapes.filter(s=>permitted.has(s.layer));let root=el('svg',{xmlns:NS,width:'298.45mm',height:'298.45mm',viewBox:'10 10 298.45 298.45'});root.append(document.createComment('BloomForge export. Confirm xTool laser operations before cutting.'));for(let key of Object.keys(colors)){if(!permitted.has(key))continue;let group=el('g',{'data-layer':key,id:'bloomforge-'+key});for(let s of included.filter(x=>x.layer===key))group.append(applyRotation(attrShape(s),s));root.append(group)}let text=new XMLSerializer().serializeToString(root);download('<?xml version="1.0" encoding="UTF-8"?>\n'+text,'bloomforge-cut-layout.svg','image/svg+xml')};
 const ticks=$('ticks');for(let mm=0;mm<=300;mm+=30){let x=10+mm;if(x<=310){let top=el('text',{x,y:7,'font-size':'4','text-anchor':'middle',fill:'var(--guide-label)'});top.textContent=mm;ticks.append(top)}let y=10+mm;if(y<=310){let left=el('text',{x:7,y:y+1,'font-size':'4','text-anchor':'end',fill:'var(--ink)'});left.textContent=mm;ticks.append(left)}}
