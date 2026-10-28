@@ -3,6 +3,23 @@
 
 BloomForge is QuarterBitGames LLC's workshop-focused SVG drafting project, part of the BloomCore ecosystem.
 
+## Target platform: Raspberry Pi desktop (Pi-first)
+
+BloomForge is designed for a Raspberry Pi with a graphical desktop, mouse, keyboard, and Chromium. It remains browser-based internally so it can work offline on Pi without a separate native rewrite. Windows/other desktop compatibility is a secondary benefit.
+
+**Launch on the Pi:**
+```sh
+git clone https://github.com/Etsimulocto/BloomForge.git
+cd BloomForge
+sh launch-pi.sh
+```
+
+Alternatively open `index.html` in Chromium by hand. The launcher finds `chromium` or `chromium-browser` and opens an app-style window. This is **not** a headless Pi app and is not a packaged native GUI.
+
+Project JSON and SVG downloads currently use Chromium's normal download workflow. A future Pi-specific iteration can add a native file dialog and remembered project paths. SVG export will still be compatible with the Windows xTool cutting workstation.
+
+Pi hardware/browser performance and laser-import accuracy have **not yet been tested**.
+
 ## First working prototype — 0.1
 
 Open **index.html** in a modern browser. No build, installation, server, login, or internet connection is required.
