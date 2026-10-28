@@ -37,6 +37,18 @@ Current capabilities:
 - Save/open **BloomForge JSON project** (editable shapes and workspace state)
 - Export an **SVG with millimeter dimensions** for import into xTool Creative Space
 
+## Compound Vector Editing — build 0.1.9 (first implementation)
+
+- Choose **Vector** in the bottom-right tool dock. Click on the canvas to add connected straight-path nodes. Press **Enter** or double-click to finish; **Esc** cancels the in-progress path.
+- Choose **Nodes** to select the finished vector and drag its node markers.
+- With a vector selected, the **Position & Dimensions** sidebar offers **+ New contour**, **Toggle closed**, **Curve node**, **+ Next node**, and **Delete node**.
+- **Curve node** toggles a pair of draggable cubic Bézier control handles on the active node; these can be moved separately with the mouse.
+- A single vector object can contain **multiple independent open or closed contours**, saved together inside its editable BloomForge JSON project.
+- Export writes the contours as a standard SVG `<path>` with `M`, `L`, `C`, and `Z` commands (without editorial node handles).
+- Vector X/Y/W/H fields refer to a bounding box derived from anchors and control points. They can move and resize the path numerically.
+- **Known limitations:** the first version does not yet import existing complex SVG paths, perform Boolean path unions/differences, create holes by winding rules, support arc nodes or automatic tangent smoothing, or provide full desktop vector-app parity. The bounding box uses control points as a conservative approximation, not exact extrema.
+- **Validation needed on Pi:** point-selection hit targets, Bézier dragging, multiple contours, SVG exports into xTool, undo/redo and save/reopen of compound vectors. Do not cut material until these are verified.
+
 ## Cursor coordinate readout — build 0.1.8
 
 - The compact top toolbar now shows **CURSOR X / Y** in millimeters whenever the pointer is over the SVG drawing canvas.
