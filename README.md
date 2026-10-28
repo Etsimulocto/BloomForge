@@ -1,3 +1,12 @@
+## Half-pitch LEGO corner alignment — build 0.1.28
+
+- Corrects **LEGO corner notch** to use **two 4 mm arms** (half the 8 mm LEGO stud pitch), with a nominal **2.4 mm stud-relief radius**. The shape is still an open four-node Bézier curve and the existing four-way stud-relief tile is preserved.
+- The new part's stud pivot is at **(30,30) mm**, a LEGO stud-grid center. Its initial endpoints are **(30,34)** and **(34,30)**; each is 4 mm from the stud center. The curved relief runs between **(30,32.4)** and **(32.4,30)**.
+- Rotation **uses the stud pivot**, rather than the visual bounding-box center. Four duplicates rotated 0/90/180/270 degrees meet in four exact shared midpoints around the stud.
+- **Dragging in Select mode snaps the stud pivot to the nearest 8 mm LEGO stud center**, independent of the existing woodworking grid. X/Y numeric positioning also rounds to the stud grid. Duplicate offsets the pivot and geometry by **8 mm** instead of 3 mm.
+- Optional width/height edits still extend the straight arms while keeping the 2.4 mm circular corner radius, with minimum width and height 2.4 mm. Changing W/H away from 4 mm deliberately breaks midpoint-to-midpoint connection and should be used only for special designs.
+- This requires **newly placed** corner-notch parts, which carry the stud pivot metadata; existing saved v0.1.27 notch parts remain loadable but lack the automatic grid pivot. Real laser kerf and fit remain fabrication concerns.
+
 ## Photo-based LEGO corner notch — build 0.1.27
 
 - Adds **LEGO corner notch · 8×8** as a distinct Parts Bench template. Keeps the earlier **LEGO stud relief · 8×8** untouched.
