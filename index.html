@@ -130,6 +130,12 @@ function refreshLayerColorPickers(){
   const value=displayLayerColor(key);
   for(const picker of document.querySelectorAll('[data-layer-color="'+key+'"]'))picker.value=value;
  }
+ // Parts Bench previews use the same display palette as the canvas.
+ for(const button of $('templates').querySelectorAll('[data-preview-layer]')){
+  const stroke=displayLayerColor(button.dataset.previewLayer);
+  const outline=button.querySelector('.template-icon > *');
+  if(outline)outline.setAttribute('stroke',stroke);
+ }
 }
 function changeLayerDisplayColor(key,value){
  if(!Object.hasOwn(colors,key)||!/^#[0-9a-fA-F]{6}$/.test(value))return;
@@ -897,13 +903,12 @@ function benchIcon(kind,w,h,layer){
  return preview;
 }
 for(const [title,kind,w,h,layer] of templates){
- const b=document.createElement('button');b.className='template';
+ const b=document.createElement('button');b.className='template';b.dataset.previewLayer=layer||'black';
  b.append(benchIcon(kind,w,h,layer));
  const label=document.createElement('span');label.className='template-name';label.textContent=title;b.append(label);
  b.onclick=()=>place(kind,w,h,layer);$('templates').append(b);
 }
-for(let key of Object.keys(colors)){let row=document.createElement('div');row.className='layer';let label=document.createElement('label');let check=document.createElement('input');check.type='checkbox';check.checked=true;check.onchange=()=>{state.visible[key]=check.checked;render()};let dot=document.createElement('span');dot.className='swatch';dot.style.background=colors[key];
- const picker=document.createElement('input');picker.type='color';picker.className='layer-swatch-picker';
+for(let key of Object.keys(colors)){let row=document.createElement('div');row.className='layer';let label=document.createElement('label');let check=document.createElement('input');check.type='checkbox';check.checked=true;check.onchange=()=>{state.visible[key]=check.checked;render()};const picker=document.createElement('input');picker.type='color';picker.className='layer-swatch-picker';
  picker.dataset.layerColor=key;picker.title='On-screen '+names[key]+' color (SVG export unchanged)';
  picker.value=displayLayerColor(key);picker.addEventListener('input',e=>changeLayerDisplayColor(key,e.target.value));
  label.append(check,document.createTextNode(names[key]));row.append(label,picker);let radio=document.createElement('input');radio.type='radio';radio.name='activeLayer';radio.title='Active drawing layer';radio.checked=key==='black';radio.onchange=()=>state.layer=key;row.append(radio);$('layers').append(row)}
