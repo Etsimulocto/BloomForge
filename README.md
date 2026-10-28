@@ -1,3 +1,13 @@
+## LEGO inner-corner rounded-square Parts Bench template — build 0.1.25
+
+- Adds **LEGO inner corner · 8×8** to the Parts Bench as an editable, closed cubic Bézier vector on the Black Cut layer.
+- The profile is a **rounded square / square-circle design starter** with four cardinal anchor points and editable inner/outer Bézier handles, not a generic uneditable rectangle.
+- The part is initially positioned from (26,26) to (34,34) mm, centered on (30,30), which matches the LEGO stud grid's 8 mm pitch and fixed (14,14) origin.
+- Each of its four nodes and control handles is editable in Select or Nodes mode; rotation, layer, saving, SVG export, symmetry selection, and numeric dimensions use normal vector functions.
+- Fixes **Duplicate** for all vector parts: clones now offset their anchors and curve handles rather than creating an overlapping vector with invalid x/y metadata.
+- Reference note: earlier project SVGs **HappyJarzSVGTest1.svg** and **Bloomslice 1.0.svg** were inspected, but they did not unambiguously identify an exact LEGO inner-corner outline. This is a usable 8 mm rounded-square approximation, not a claimed exact trace of those source shapes.
+- Do not assume this profile is a proven press-fit mate for LEGO studs. Check with a sacrificial cut before integrating it into production panels.
+
 ## LEGO secondary grid overlay — build 0.1.24
 
 - **WORKSHOP → LEGO · SECONDARY GRID → Show 8 mm stud grid** toggles a pink hole-guide overlay on the canvas. It is independent of the existing 3 mm / custom drawing grid and its snap setting.
