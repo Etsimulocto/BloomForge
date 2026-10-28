@@ -1,3 +1,12 @@
+## Four editable display-layer swatches and dark-theme contrast — build 0.1.32
+
+- Adds editable color pickers for **Black Cut, Red Score/Etch, Green Guides, and Cyan Framing** beside the four layers and under **Theme → FOUR LAYER DISPLAY COLORS**. Both sets of pickers stay synchronized.
+- **Dark, Midnight, and Blueprint** themes default to a bright `#f4f7fb` Black Cut outline against dark drawing paper; custom dark canvas colors also get an automatic light Black Cut default.
+- Changes are **display-only**: the canvas and Parts Bench preview strokes use the chosen screen colors. The SVG export deliberately retains canonical Black `#222222`, Red `#d74141`, Green `#269b4d`, and Cyan `#02a7c3` to keep laser operation-color mapping stable.
+- User overrides apply across theme switching until **Reset layer display colors** is clicked. Overrides are saved as `state.layerColors` in BloomForge project JSON and restored on project open; older projects with no overrides still work.
+- Theme palette CSS settings remain separate from fabrication display swatches. No shape, cutting geometry, or laser export stroke width is changed.
+- Test Black Cut visibility in dark themes and confirm your machine's SVG operation assignment before cutting.
+
 ## Open 2×2 LEGO corner and Cut Line tool — build 0.1.31
 
 - Removes **LEGO end corner · mitred 8 mm** from the Parts Bench (existing placed/saved objects of that type continue to load). Other corner templates are retained.
