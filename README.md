@@ -1,3 +1,11 @@
+## Symmetry click/drag diagnosis — build 0.1.17
+
+- **Symmetry** and **Free Nodes** controls are now pinned at the *far left of the top bar*, outside the horizontally scrolling dimension fields. They remain visible when a primitive converts to a vector.
+- The right inspector explicitly reports **LOCKED · symmetric resize** or **FREE · individual nodes** for the current part.
+- The bottom status area reports **Symmetry ON**, **Free Nodes ON**, **Grabbed ...**, and **SYMMETRY drag** / **FREE drag** when those actual events reach the application.
+- The event readout distinguishes a missing click or node-drag event from an incorrect geometry calculation.
+- This is a targeted usability and diagnostic patch, not confirmation that the Raspberry Pi mouse failure has been reproduced or resolved.
+
 ## Explicit symmetry controls — build 0.1.15
 
 - The top bar has two separate choices: **🔒 Symmetry** and **🔓 Free Nodes**, with the active choice highlighted.
