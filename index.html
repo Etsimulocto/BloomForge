@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>BloomForge 0.1.24 · QuarterBitGames</title>
+<title>BloomForge 0.1.25 · QuarterBitGames</title>
 <style>
 :root{--bg:#eaf0f2;--panel:#ffffff;--ink:#243441;--border:#cbd5dd;--accent:#0297a6;--canvas:#ffffff;--grid:#dfe7e9;--button-bg:#ffffff;--button-ink:#243441;--button-border:#cbd5dd;--guide-label:#667785;--selection:#ea5b9f;--canvas-frame:#02a7c3}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px system-ui,Segoe UI,Arial,sans-serif}
@@ -94,7 +94,7 @@ button,input,select{font:inherit}button{border:1px solid var(--button-border);ba
 <section class="section"><h3>POSITION & DIMENSIONS</h3><div class="selected-note" id="symmetryState" aria-live="polite">SELECT A PART</div><div id="properties" class="muted">Select or draw an object to edit it.</div><div class="row"><button id="duplicate">Duplicate</button><button id="delete">Delete</button><button id="undo">Undo</button><button id="redo">Redo</button></div></section>
 
 <section class="tools"><h3>TOOLS · BOTTOM RIGHT</h3><div class="toolgrid" id="tools"><button data-tool="select">Select</button><button data-tool="rect">Rect</button><button data-tool="circle">Circle</button><button data-tool="line">Line</button><button data-tool="slot">Slot</button><button data-tool="arc">Arc</button><button data-tool="vector">Vector</button><button data-tool="nodes">Nodes</button></div></section>
-</aside><footer class="info"><span><span id="status">Ready · select a tool · 3 mm snap enabled</span> · <span id="interactionStatus">Ready for node edits</span></span><span class="footerbrand">🪷 BloomForge · BUILD 0.1.24 · QuarterBitGames LLC · Precision Workbench</span></footer></div>
+</aside><footer class="info"><span><span id="status">Ready · select a tool · 3 mm snap enabled</span> · <span id="interactionStatus">Ready for node edits</span></span><span class="footerbrand">🪷 BloomForge · BUILD 0.1.25 · QuarterBitGames LLC · Precision Workbench</span></footer></div>
 <script>
 'use strict';
 const NS='http://www.w3.org/2000/svg', SHEET=298.45;
@@ -592,14 +592,32 @@ function castleEdgePoints(x=0,y=0){
  return [[0,3],[0,0],[3,0],[3,3],[6,3],[6,0],[9,0],[9,3],[12,3]]
   .map(([dx,dy])=>({x:round(x+dx),y:round(y+dy)}));
 }
+// LEGO-compatible rounded-square profile: 8x8 mm footprint, four cardinal anchor nodes,
+// eight editable cubic handles. Center is an 8 mm LEGO grid stud location.
+function legoInnerCornerPoints(x=26,y=26){
+ const cx=x+4,cy=y+4,handle=3.4;
+ const p=(px,py,ix,iy,ox,oy)=>({
+  x:round(px),y:round(py),inX:round(ix),inY:round(iy),outX:round(ox),outY:round(oy)
+ });
+ return [
+  p(cx,y,cx-handle,y,cx+handle,y),
+  p(x+8,cy,x+8,cy-handle,x+8,cy+handle),
+  p(cx,y+8,cx+handle,y+8,cx-handle,y+8),
+  p(x,cy,x,cy+handle,x,cy-handle)
+ ];
+}
+function legoInnerCornerPart(x=26,y=26,layer='black'){
+ return{id:uid(),kind:'vector',layer,subpaths:[{closed:true,points:legoInnerCornerPoints(x,y)}],symmetryLocked:false,rotation:0};
+}
 function place(kind,w,h,layer='black'){
  remember();let s;
- if(kind==='castle-edge')s={id:uid(),kind:'vector',layer,subpaths:[{closed:false,points:castleEdgePoints(30,30)}],symmetryLocked:false,rotation:0};
+ if(kind==='lego-inner-corner')s=legoInnerCornerPart(26,26,layer);
+ else if(kind==='castle-edge')s={id:uid(),kind:'vector',layer,subpaths:[{closed:false,points:castleEdgePoints(30,30)}],symmetryLocked:false,rotation:0};
  else if(kind==='circle')s={id:uid(),kind,layer,x:45,y:45,r:w/2};
  else s={id:uid(),kind,layer,x:30,y:30,w,h};
  state.shapes.push(s);state.selected=s.id;setTool('select');
 }
-const templates=[['3 mm hole','circle',3,3],['2.5 mm hole','circle',2.5,2.5],['6 × 18 slot','slot',18,6],['3 × 12 tab','rect',12,3],['Castle corner · 3×3×3×3','castle-edge',12,3],['30 × 30 panel','rect',30,30],['60 × 60 panel','rect',60,60],['3 mm ruler','rect',30,3,'green'],['Sheet frame','rect',SHEET,SHEET,'cyan']];
+const templates=[['3 mm hole','circle',3,3],['2.5 mm hole','circle',2.5,2.5],['6 × 18 slot','slot',18,6],['3 × 12 tab','rect',12,3],['Castle corner · 3×3×3×3','castle-edge',12,3],['LEGO inner corner · 8×8','lego-inner-corner',8,8],['30 × 30 panel','rect',30,30],['60 × 60 panel','rect',60,60],['3 mm ruler','rect',30,3,'green'],['Sheet frame','rect',SHEET,SHEET,'cyan']];
 // The Parts Bench has its own visible, double-weight SVG geometry previews.
 // These are UI thumbnails only; placement and fabrication/export dimensions remain unchanged.
 function benchIcon(kind,w,h,layer){
@@ -608,7 +626,11 @@ function benchIcon(kind,w,h,layer){
  const scale=Math.min(22/Math.max(w,.01),22/Math.max(h,.01));
  const sw=Math.max(3,Math.min(22,w*scale)),sh=Math.max(3,Math.min(22,h*scale));
  let shape;
- if(kind==='castle-edge'){
+ if(kind==='lego-inner-corner'){
+  const temporary={subpaths:[{closed:true,points:legoInnerCornerPoints(0,0)}]};
+  shape=el('path',{d:vectorPath(temporary),transform:'translate(5 5) scale(2.75)'});
+ }
+ else if(kind==='castle-edge'){
   // Same geometry as the placed vector, fitted into the bench icon.
   const pts=castleEdgePoints();
   const d=pts.map((p,i)=>(i?'L ':'M ')+(16-sw/2+p.x*sw/12)+' '+(16-sh/2+p.y*sh/3)).join(' ');
@@ -730,7 +752,20 @@ function restoreTheme(){
 
 $('guides').onchange=e=>{svg.querySelector('rect[fill="url(#grid)"]').style.display=e.target.checked?'':'none';$('ticks').style.display=e.target.checked?'':'none'};
 $('delete').onclick=()=>{if(!state.selected)return;remember();state.shapes=state.shapes.filter(x=>x.id!==state.selected);state.selected=null;render()};
-$('duplicate').onclick=()=>{let s=state.shapes.find(x=>x.id===state.selected);if(!s)return;remember();let t=copy(s);t.id=uid();t.x=round(t.x+state.step);t.y=round(t.y+state.step);if('x2'in t){t.x2+=state.step;t.y2+=state.step}state.shapes.push(t);state.selected=t.id;render()};
+$('duplicate').onclick=()=>{
+ let s=state.shapes.find(x=>x.id===state.selected);if(!s)return;
+ remember();let t=copy(s);t.id=uid();const offset=state.gridMode==='free'?3:state.step;
+ if(t.kind==='vector'){
+  for(const sub of t.subpaths)for(const p of sub.points){
+   p.x=round(p.x+offset);p.y=round(p.y+offset);
+   for(const h of ['in','out'])if(p[h+'X']!=null){p[h+'X']=round(p[h+'X']+offset);p[h+'Y']=round(p[h+'Y']+offset)}
+  }
+ }else{
+  t.x=round(t.x+offset);t.y=round(t.y+offset);
+  if('x2'in t){t.x2=round(t.x2+offset);t.y2=round(t.y2+offset)}
+ }
+ state.shapes.push(t);state.selected=t.id;render();
+};
 function undo(){if(history.length){future.push(copy(state.shapes));state.shapes=history.pop();state.selected=null;render()}}function redo(){if(future.length){history.push(copy(state.shapes));state.shapes=future.pop();state.selected=null;render()}}
 $('undo').onclick=undo;$('redo').onclick=redo;
 window.addEventListener('keydown',e=>{
