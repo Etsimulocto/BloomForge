@@ -1,3 +1,12 @@
+## Castle edge Parts Bench profile — build 0.1.20
+
+- Adds **Castle edge · 12 × 3 mm** to the Parts Bench, with a matching bold square-wave thumbnail.
+- Places a real editable **open vector path** measuring exactly **12 mm end-to-end** and **3 mm deep**.
+- Square-wave coordinates, relative to the part origin: `(0,0) → (3,0) → (3,3) → (6,3) → (6,0) → (9,0) → (9,3) → (12,3)`. All steps use 3 mm increments.
+- Node dots can be dragged in Select/Nodes mode. The part can be moved, duplicated, rotated using ROT °, saved, and exported as SVG path geometry.
+- This is an **open edge profile**, not a closed cut-ready panel or a tolerance-adjusted mating joint. Integrate it into a closed panel outline and verify finger fit and laser kerf before cutting.
+- Default symmetry mode for this freeform vector is Free Nodes.
+
 ## Heavier on-screen outlines & Parts Bench previews — build 0.1.19
 
 - Canvas part outlines are rendered at **1.1 SVG drawing units**, up from **0.55** (2× on-screen width); selection highlights also double from 1.3 to 2.6. Draft paths receive heavier display strokes.
