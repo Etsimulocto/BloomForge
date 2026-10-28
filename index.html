@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>BloomForge 0.1.25 · QuarterBitGames</title>
+<title>BloomForge 0.1.26 · QuarterBitGames</title>
 <style>
 :root{--bg:#eaf0f2;--panel:#ffffff;--ink:#243441;--border:#cbd5dd;--accent:#0297a6;--canvas:#ffffff;--grid:#dfe7e9;--button-bg:#ffffff;--button-ink:#243441;--button-border:#cbd5dd;--guide-label:#667785;--selection:#ea5b9f;--canvas-frame:#02a7c3}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px system-ui,Segoe UI,Arial,sans-serif}
@@ -94,7 +94,7 @@ button,input,select{font:inherit}button{border:1px solid var(--button-border);ba
 <section class="section"><h3>POSITION & DIMENSIONS</h3><div class="selected-note" id="symmetryState" aria-live="polite">SELECT A PART</div><div id="properties" class="muted">Select or draw an object to edit it.</div><div class="row"><button id="duplicate">Duplicate</button><button id="delete">Delete</button><button id="undo">Undo</button><button id="redo">Redo</button></div></section>
 
 <section class="tools"><h3>TOOLS · BOTTOM RIGHT</h3><div class="toolgrid" id="tools"><button data-tool="select">Select</button><button data-tool="rect">Rect</button><button data-tool="circle">Circle</button><button data-tool="line">Line</button><button data-tool="slot">Slot</button><button data-tool="arc">Arc</button><button data-tool="vector">Vector</button><button data-tool="nodes">Nodes</button></div></section>
-</aside><footer class="info"><span><span id="status">Ready · select a tool · 3 mm snap enabled</span> · <span id="interactionStatus">Ready for node edits</span></span><span class="footerbrand">🪷 BloomForge · BUILD 0.1.25 · QuarterBitGames LLC · Precision Workbench</span></footer></div>
+</aside><footer class="info"><span><span id="status">Ready · select a tool · 3 mm snap enabled</span> · <span id="interactionStatus">Ready for node edits</span></span><span class="footerbrand">🪷 BloomForge · BUILD 0.1.26 · QuarterBitGames LLC · Precision Workbench</span></footer></div>
 <script>
 'use strict';
 const NS='http://www.w3.org/2000/svg', SHEET=298.45;
@@ -592,32 +592,38 @@ function castleEdgePoints(x=0,y=0){
  return [[0,3],[0,0],[3,0],[3,3],[6,3],[6,0],[9,0],[9,3],[12,3]]
   .map(([dx,dy])=>({x:round(x+dx),y:round(y+dy)}));
 }
-// LEGO-compatible rounded-square profile: 8x8 mm footprint, four cardinal anchor nodes,
-// eight editable cubic handles. Center is an 8 mm LEGO grid stud location.
-function legoInnerCornerPoints(x=26,y=26){
- const cx=x+4,cy=y+4,handle=3.4;
- const p=(px,py,ix,iy,ox,oy)=>({
-  x:round(px),y:round(py),inX:round(ix),inY:round(iy),outX:round(ox),outY:round(oy)
- });
+// LEGO stud-corner RELIEF TILE, not a rounded square.
+// One 8x8 mm grid cell bounded by four STUD CENTERS; the material is relieved
+// at each stud center by a concave QUARTER-CIRCLE of radius 2.4 mm.
+// Four straight linking edges + four inward quarter-arcs = a single closed path.
+// Eight anchor nodes (two per notch), each independently editable.
+function legoInnerCornerPoints(x=30,y=30){
+ const side=8,r=LEGO_DIAMETER/2,k=0.5522847498307936*r;
+ const p=(dx,dy,extra={})=>({x:round(x+dx),y:round(y+dy),
+   ...Object.fromEntries(Object.entries(extra).map(([key,val])=>[key,round(val)]))});
  return [
-  p(cx,y,cx-handle,y,cx+handle,y),
-  p(x+8,cy,x+8,cy-handle,x+8,cy+handle),
-  p(cx,y+8,cx+handle,y+8,cx-handle,y+8),
-  p(x,cy,x,cy+handle,x,cy-handle)
+  p(r,0,{inX:x+r,inY:y+k}),
+  p(side-r,0,{outX:x+side-r,outY:y+k}),
+  p(side,r,{inX:x+side-k,inY:y+r}),
+  p(side,side-r,{outX:x+side-k,outY:y+side-r}),
+  p(side-r,side,{inX:x+side-r,inY:y+side-k}),
+  p(r,side,{outX:x+r,outY:y+side-k}),
+  p(0,side-r,{inX:x+k,inY:y+side-r}),
+  p(0,r,{outX:x+k,outY:y+r})
  ];
 }
-function legoInnerCornerPart(x=26,y=26,layer='black'){
+function legoInnerCornerPart(x=30,y=30,layer='black'){
  return{id:uid(),kind:'vector',layer,subpaths:[{closed:true,points:legoInnerCornerPoints(x,y)}],symmetryLocked:false,rotation:0};
 }
 function place(kind,w,h,layer='black'){
  remember();let s;
- if(kind==='lego-inner-corner')s=legoInnerCornerPart(26,26,layer);
+ if(kind==='lego-inner-corner')s=legoInnerCornerPart(30,30,layer);
  else if(kind==='castle-edge')s={id:uid(),kind:'vector',layer,subpaths:[{closed:false,points:castleEdgePoints(30,30)}],symmetryLocked:false,rotation:0};
  else if(kind==='circle')s={id:uid(),kind,layer,x:45,y:45,r:w/2};
  else s={id:uid(),kind,layer,x:30,y:30,w,h};
  state.shapes.push(s);state.selected=s.id;setTool('select');
 }
-const templates=[['3 mm hole','circle',3,3],['2.5 mm hole','circle',2.5,2.5],['6 × 18 slot','slot',18,6],['3 × 12 tab','rect',12,3],['Castle corner · 3×3×3×3','castle-edge',12,3],['LEGO inner corner · 8×8','lego-inner-corner',8,8],['30 × 30 panel','rect',30,30],['60 × 60 panel','rect',60,60],['3 mm ruler','rect',30,3,'green'],['Sheet frame','rect',SHEET,SHEET,'cyan']];
+const templates=[['3 mm hole','circle',3,3],['2.5 mm hole','circle',2.5,2.5],['6 × 18 slot','slot',18,6],['3 × 12 tab','rect',12,3],['Castle corner · 3×3×3×3','castle-edge',12,3],['LEGO stud relief · 8×8','lego-inner-corner',8,8],['30 × 30 panel','rect',30,30],['60 × 60 panel','rect',60,60],['3 mm ruler','rect',30,3,'green'],['Sheet frame','rect',SHEET,SHEET,'cyan']];
 // The Parts Bench has its own visible, double-weight SVG geometry previews.
 // These are UI thumbnails only; placement and fabrication/export dimensions remain unchanged.
 function benchIcon(kind,w,h,layer){
