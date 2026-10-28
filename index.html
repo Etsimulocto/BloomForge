@@ -16,7 +16,7 @@ button,input,select{font:inherit}button{border:1px solid var(--border);backgroun
 <rect width="320" height="320" fill="var(--canvas)"/><rect x="10" y="10" width="298.45" height="298.45" fill="url(#grid)" stroke="#06aaca" stroke-width=".7" pointer-events="none"/>
 <g id="ticks"></g><g id="objects"></g><g id="draft"></g></svg><span class="sheet-label">Cyan: 11.75 × 11.75 in wood · x/y in mm</span></div></main>
 <aside class="right">
-<section class="section"><h3>WORKSHOP</h3><div class="row"><label>Theme <select id="theme"><option value="light">Light</option><option value="dark">Dark</option><option value="wood">Wood</option></select></label><label>Grid <select id="step"><option value="3">3 mm</option><option value="1">1 mm</option><option value="0.5">0.5 mm</option></select></label></div><label><input id="snap" type="checkbox" checked> Snap locked</label><label><input id="guides" type="checkbox" checked> Show grid / sheet frame</label></section>
+<section class="section"><h3>WORKSHOP</h3><div class="row"><label>Theme <select id="theme"><option value="light">Light</option><option value="dark">Dark</option><option value="wood">Wood</option></select></label><label>Grid <select id="step"><option value="3">3 mm</option><option value="1">1 mm</option><option value="0.5">0.5 mm</option></select></label></div><div class="row"><button id="zoomOut" title="Zoom out (Ctrl+-)">−</button><button id="zoomReset" title="Fit canvas (Ctrl+0)">100%</button><button id="zoomIn" title="Zoom in (Ctrl++)">+</button><span class="muted" id="zoomLabel">100%</span></div><div class="muted">Wheel: zoom at cursor · Ctrl+wheel: zoom · Shift+wheel: horizontal pan · Middle drag or Space+drag: pan · Ctrl+/−: zoom · Ctrl+0: reset</div><label><input id="snap" type="checkbox" checked> Snap locked</label><label><input id="guides" type="checkbox" checked> Show grid / sheet frame</label></section>
 <section class="section"><h3>FOUR LAYERS</h3><div id="layers"></div><div class="muted">Green and cyan are guides: excluded from manufacturing SVG by default.</div></section>
 <section class="section"><h3>SELECTED OBJECT</h3><div id="properties" class="muted">Select or draw an object to edit it.</div><div class="row"><button id="duplicate">Duplicate</button><button id="delete">Delete</button><button id="undo">Undo</button><button id="redo">Redo</button></div></section>
 <section class="section"><h3>EXPORT SETTINGS</h3><label><input type="checkbox" id="exportRed" checked> Include red Score/Etch</label><label><input type="checkbox" id="exportGuides"> Include green/cyan guides</label><div class="muted">Exported SVG retains millimeter units. Check operation assignment in xTool before firing.</div></section>
@@ -30,13 +30,24 @@ const names={black:'Black · Cut',red:'Red · Score/Etch',green:'Green · Ruler/
 const $=id=>document.getElementById(id);
 const svg=$('drawing'), objects=$('objects'), drafts=$('draft');
 let state={shapes:[],selected:null,tool:'select',layer:'black',step:3,snap:true,visible:{black:true,red:true,green:true,cyan:true},theme:'light'};
-let drag=null,history=[],future=[];
+let drag=null,history=[],future=[],spaceHeld=false;
+const BASE_VIEW={x:0,y:0,w:320,h:320};
+let view={...BASE_VIEW};
+const MIN_ZOOM=0.2, MAX_ZOOM=20;
+function zoomRatio(){return BASE_VIEW.w/view.w}
+function setView(next){view=next;svg.setAttribute('viewBox',`${view.x} ${view.y} ${view.w} ${view.h}`);$('zoomLabel').textContent=Math.round(zoomRatio()*100)+'%';$('zoomReset').textContent='Fit'}
+function rawPoint(ev){const p=svg.createSVGPoint();p.x=ev.clientX;p.y=ev.clientY;const m=svg.getScreenCTM();if(!m)return{x:0,y:0};const t=p.matrixTransform(m.inverse());return{x:t.x,y:t.y}}
+function zoomAt(factor,clientX,clientY){const before=rawPoint({clientX,clientY});const newW=Math.min(BASE_VIEW.w/MIN_ZOOM,Math.max(BASE_VIEW.w/MAX_ZOOM,view.w/factor));const scale=newW/view.w;const next={x:before.x-(before.x-view.x)*scale,y:before.y-(before.y-view.y)*scale,w:newW,h:view.h*scale};setView(next)}
+function zoomCenter(factor){const r=svg.getBoundingClientRect();zoomAt(factor,r.left+r.width/2,r.top+r.height/2)}
+function resetZoom(){setView({...BASE_VIEW})}
+function panPixels(dx,dy){const r=svg.getBoundingClientRect();if(!r.width||!r.height)return;setView({...view,x:view.x-dx*view.w/r.width,y:view.y-dy*view.h/r.height})}
+
 const copy=o=>JSON.parse(JSON.stringify(o));const uid=()=>Math.random().toString(36).slice(2,11);
 const round=n=>Math.round(n*1000)/1000;
 const snap=n=>round(state.snap?Math.round(n/state.step)*state.step:n);
 const valid=n=>Number.isFinite(n)&&Math.abs(n)<1e6;
 function remember(){history.push(copy(state.shapes));if(history.length>100)history.shift();future=[]}
-function point(ev){let p=svg.createSVGPoint();p.x=ev.clientX;p.y=ev.clientY;let matrix=svg.getScreenCTM();if(!matrix)return{x:0,y:0};let t=p.matrixTransform(matrix.inverse());return{x:snap(t.x),y:snap(t.y)}}
+function point(ev){const p=rawPoint(ev);return{x:snap(p.x),y:snap(p.y)}}
 function el(name,attrs={}){let e=document.createElementNS(NS,name);for(let [k,v] of Object.entries(attrs))e.setAttribute(k,v);return e}
 function attrShape(s){const a={fill:'none',stroke:colors[s.layer]||colors.black,'stroke-width':'.55','vector-effect':'non-scaling-stroke','data-id':s.id};let k=s.kind;
  if(k==='rect')return el('rect',{...a,x:s.x,y:s.y,width:s.w,height:s.h});
@@ -56,10 +67,17 @@ function renderProperties(){const s=state.shapes.find(x=>x.id===state.selected);
 function setTool(t){state.tool=t;document.querySelectorAll('[data-tool]').forEach(b=>b.classList.toggle('active',b.dataset.tool===t));render()}
 function shapeBetween(a,b,kind,layer=state.layer){let x=Math.min(a.x,b.x),y=Math.min(a.y,b.y),w=Math.max(state.step,Math.abs(b.x-a.x)),h=Math.max(state.step,Math.abs(b.y-a.y));if(kind==='circle')return{id:uid(),kind,layer,x:a.x,y:a.y,r:Math.max(.5,Math.hypot(b.x-a.x,b.y-a.y))};if(kind==='line'||kind==='arc')return{id:uid(),kind,layer,x:a.x,y:a.y,x2:b.x,y2:b.y};return{id:uid(),kind,layer,x,y,w,h}}
 function hit(ev){return ev.target.closest('[data-id]')?.getAttribute('data-id')}
-svg.addEventListener('pointerdown',ev=>{if(ev.button!==0)return;const p=point(ev),id=hit(ev);if(state.tool==='select'){state.selected=id||null;if(id){remember();let s=state.shapes.find(q=>q.id===id);drag={kind:'move',start:p,original:copy(s),id}}else drag=null;render()}else{drag={kind:'draw',start:p,current:p};drafts.replaceChildren();}svg.setPointerCapture(ev.pointerId)});
-svg.addEventListener('pointermove',ev=>{const p=point(ev);if(!drag)return;if(drag.kind==='move'){const s=state.shapes.find(q=>q.id===drag.id);if(!s)return;const dx=p.x-drag.start.x,dy=p.y-drag.start.y;s.x=round(drag.original.x+dx);s.y=round(drag.original.y+dy);if('x2'in s){s.x2=round(drag.original.x2+dx);s.y2=round(drag.original.y2+dy)}render()}else{drag.current=p;drafts.replaceChildren(attrShape(shapeBetween(drag.start,p,state.tool)))}});
-svg.addEventListener('pointerup',ev=>{if(!drag)return;if(drag.kind==='draw'){const p=point(ev),dist=Math.hypot(p.x-drag.start.x,p.y-drag.start.y);if(dist>=.4){remember();let s=shapeBetween(drag.start,p,state.tool);state.shapes.push(s);state.selected=s.id}}drafts.replaceChildren()}drag=null;render()});
+svg.addEventListener('pointerdown',ev=>{if(ev.button===1||(ev.button===0&&spaceHeld)){drag={kind:'pan',lastX:ev.clientX,lastY:ev.clientY};svg.setPointerCapture(ev.pointerId);ev.preventDefault();return}if(ev.button!==0)return;const p=point(ev),id=hit(ev);if(state.tool==='select'){state.selected=id||null;if(id){remember();let s=state.shapes.find(q=>q.id===id);drag={kind:'move',start:p,original:copy(s),id}}else drag=null;render()}else{drag={kind:'draw',start:p,current:p};drafts.replaceChildren();}svg.setPointerCapture(ev.pointerId)});
+svg.addEventListener('pointermove',ev=>{if(drag?.kind==='pan'){panPixels(ev.clientX-drag.lastX,ev.clientY-drag.lastY);drag.lastX=ev.clientX;drag.lastY=ev.clientY;return}const p=point(ev);if(!drag)return;if(drag.kind==='move'){const s=state.shapes.find(q=>q.id===drag.id);if(!s)return;const dx=p.x-drag.start.x,dy=p.y-drag.start.y;s.x=round(drag.original.x+dx);s.y=round(drag.original.y+dy);if('x2'in s){s.x2=round(drag.original.x2+dx);s.y2=round(drag.original.y2+dy)}render()}else{drag.current=p;drafts.replaceChildren(attrShape(shapeBetween(drag.start,p,state.tool)))}});
+svg.addEventListener('pointerup',ev=>{if(!drag)return;if(drag.kind==='pan'){drag=null;return}if(drag.kind==='draw'){const p=point(ev),dist=Math.hypot(p.x-drag.start.x,p.y-drag.start.y);if(dist>=.4){remember();let s=shapeBetween(drag.start,p,state.tool);state.shapes.push(s);state.selected=s.id}}drafts.replaceChildren()}drag=null;render()});
 svg.addEventListener('pointercancel',()=>{drag=null;drafts.replaceChildren();render()});
+svg.addEventListener('auxclick',e=>{if(e.button===1)e.preventDefault()});
+svg.addEventListener('wheel',e=>{e.preventDefault();if(e.shiftKey&&!e.ctrlKey&&!e.metaKey){panPixels(-e.deltaY,0);return}const factor=Math.exp(-Math.max(-150,Math.min(150,e.deltaY))*0.002);zoomAt(factor,e.clientX,e.clientY)},{passive:false});
+$('zoomIn').onclick=()=>zoomCenter(1.25);
+$('zoomOut').onclick=()=>zoomCenter(1/1.25);
+$('zoomReset').onclick=resetZoom;
+window.addEventListener('blur',()=>spaceHeld=false);
+document.addEventListener('keyup',e=>{if(e.code==='Space')spaceHeld=false});
 function place(kind,w,h,layer='black'){remember();let s;if(kind==='circle')s={id:uid(),kind,layer,x:45,y:45,r:w/2};else s={id:uid(),kind,layer,x:30,y:30,w,h};state.shapes.push(s);state.selected=s.id;setTool('select')}
 const templates=[['3 mm hole','circle',3,3],['2.5 mm hole','circle',2.5,2.5],['6 × 18 slot','slot',18,6],['3 × 12 tab','rect',12,3],['30 × 30 panel','rect',30,30],['60 × 60 panel','rect',60,60],['3 mm ruler','rect',30,3,'green'],['Sheet frame','rect',SHEET,SHEET,'cyan']];
 for(const [title,kind,w,h,layer] of templates){let b=document.createElement('button');b.className='template';b.textContent=title;b.onclick=()=>place(kind,w,h,layer);$('templates').append(b)}
@@ -73,7 +91,10 @@ $('delete').onclick=()=>{if(!state.selected)return;remember();state.shapes=state
 $('duplicate').onclick=()=>{let s=state.shapes.find(x=>x.id===state.selected);if(!s)return;remember();let t=copy(s);t.id=uid();t.x=round(t.x+state.step);t.y=round(t.y+state.step);if('x2'in t){t.x2+=state.step;t.y2+=state.step}state.shapes.push(t);state.selected=t.id;render()};
 function undo(){if(history.length){future.push(copy(state.shapes));state.shapes=history.pop();state.selected=null;render()}}function redo(){if(future.length){history.push(copy(state.shapes));state.shapes=future.pop();state.selected=null;render()}}
 $('undo').onclick=undo;$('redo').onclick=redo;
-document.addEventListener('keydown',e=>{if(['INPUT','SELECT'].includes(document.activeElement.tagName))return;if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'){e.preventDefault();e.shiftKey?redo():undo()}if((e.key==='Delete'||e.key==='Backspace')&&state.selected)$('delete').click()});
+document.addEventListener('keydown',e=>{if(['INPUT','SELECT','TEXTAREA'].includes(document.activeElement.tagName))return;
+if(e.code==='Space'&&!e.ctrlKey&&!e.metaKey){spaceHeld=true;e.preventDefault();return}
+if(e.ctrlKey||e.metaKey){if(['+','=','Add'].includes(e.key)){e.preventDefault();zoomCenter(1.25);return}if(['-','_','Subtract'].includes(e.key)){e.preventDefault();zoomCenter(1/1.25);return}if(e.key==='0'){e.preventDefault();resetZoom();return}if(e.key.toLowerCase()==='z'){e.preventDefault();e.shiftKey?redo():undo();return}}
+if((e.key==='Delete'||e.key==='Backspace')&&state.selected)$('delete').click()});
 function download(text,filename,type){let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type}));a.download=filename;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),5000)}
 $('save').onclick=()=>download(JSON.stringify({format:'BloomForge',version:1,material:{thicknessMm:3,sheetMm:SHEET},state},null,2),'bloomforge-project.json','application/json');
 $('open').onclick=()=>$('file').click();
@@ -81,5 +102,5 @@ $('file').onchange=async e=>{let file=e.target.files[0];if(!file)return;try{let 
 $('new').onclick=()=>{if(state.shapes.length&&!confirm('Start a new blank project? Unsaved geometry will be lost.'))return;remember();state.shapes=[];state.selected=null;render()};
 $('export').onclick=()=>{const guides=$('exportGuides').checked,red=$('exportRed').checked;const permitted=new Set(['black',...(red?['red']:[]),...(guides?['green','cyan']:[])]);const included=state.shapes.filter(s=>permitted.has(s.layer));let root=el('svg',{xmlns:NS,width:'298.45mm',height:'298.45mm',viewBox:'10 10 298.45 298.45'});root.append(document.createComment('BloomForge export. Confirm xTool laser operations before cutting.'));for(let key of Object.keys(colors)){if(!permitted.has(key))continue;let group=el('g',{'data-layer':key,id:'bloomforge-'+key});for(let s of included.filter(x=>x.layer===key))group.append(attrShape(s));root.append(group)}let text=new XMLSerializer().serializeToString(root);download('<?xml version="1.0" encoding="UTF-8"?>\n'+text,'bloomforge-cut-layout.svg','image/svg+xml')};
 const ticks=$('ticks');for(let mm=0;mm<=300;mm+=30){let x=10+mm;if(x<=310){let top=el('text',{x,y:7,'font-size':'4','text-anchor':'middle',fill:'var(--ink)'});top.textContent=mm;ticks.append(top)}let y=10+mm;if(y<=310){let left=el('text',{x:7,y:y+1,'font-size':'4','text-anchor':'end',fill:'var(--ink)'});left.textContent=mm;ticks.append(left)}}
-setTool('select');
+setTool('select');resetZoom();
 </script></body></html>
