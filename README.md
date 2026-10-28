@@ -1,3 +1,13 @@
+## LEGO stud-center relief tile — build 0.1.26
+
+- Replaces the 0.1.25 **LEGO inner corner** Bench template with **LEGO stud relief · 8×8**, an 8 mm grid-cell shape whose four corners are NOT rounded outward; they are cut INWARD to leave stud clearance.
+- The four hypothetical studs sit at the square's corners: (30,30), (38,30), (38,38), (30,38) mm, which match the secondary LEGO grid centers (origin 14 mm, pitch 8 mm).
+- Each removed corner follows a nominal **quarter-circle relief of 2.4 mm radius**, corresponding to the builder's tested **4.8 mm stud diameter**. The resulting connected part has four inward arcs separated by 3.2 mm straight edge segments and is a closed SVG cut outline.
+- The vector contains **eight anchor nodes, two per relieved corner**, and editable Bézier controls. Exact circular quarter-arcs are represented with standard cubic Bézier approximation (kappa ≈0.55228475).
+- The bench thumbnail derives from the same vector geometry; the Black Cut part can be moved, rotated, resized, duplicated, and SVG-exported. Its width and height are 8 mm.
+- IMPORTANT: Holes/circles and relief tiles are separate cut geometry. Avoid overlapping cut operations. The tile itself is one 8 mm cell; assembling multiple cells into a larger continuous panel needs connected path editing/Boolean union, not double-cutting shared outlines.
+- Actual laser kerf means 4.8 mm nominal relief may require small clearance adjustments for real-world cut fit; test on scrap before production.
+
 ## LEGO inner-corner rounded-square Parts Bench template — build 0.1.25
 
 - Adds **LEGO inner corner · 8×8** to the Parts Bench as an editable, closed cubic Bézier vector on the Black Cut layer.
