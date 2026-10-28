@@ -1,12 +1,12 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>BloomForge 0.1.6 · QuarterBitGames</title>
+<title>BloomForge 0.1.7 · QuarterBitGames</title>
 <style>
-:root{--bg:#eaf0f2;--panel:#fff;--ink:#243441;--border:#cbd5dd;--accent:#0297a6;--canvas:#fff;--grid:#dfe7e9}
+:root{--bg:#eaf0f2;--panel:#ffffff;--ink:#243441;--border:#cbd5dd;--accent:#0297a6;--canvas:#ffffff;--grid:#dfe7e9;--button-bg:#ffffff;--button-ink:#243441;--button-border:#cbd5dd;--guide-label:#667785;--selection:#ea5b9f;--canvas-frame:#02a7c3}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px system-ui,Segoe UI,Arial,sans-serif}
 body[data-theme=dark]{--bg:#202b35;--panel:#2e3b47;--ink:#eef4f8;--border:#53636d;--canvas:#344452;--grid:#495968}
 body[data-theme=wood]{--bg:#dfceb0;--panel:#f2e4ca;--ink:#4d3827;--border:#bda47d;--canvas:#fff9eb;--grid:#e9dcca}
-button,input,select{font:inherit}button{border:1px solid var(--border);background:var(--panel);color:var(--ink);border-radius:6px;padding:7px 9px;cursor:pointer}button:hover{border-color:var(--accent)}button.active{background:var(--accent);color:white;border-color:var(--accent)}input,select{max-width:100%;background:var(--panel);color:var(--ink);border:1px solid var(--border);border-radius:5px;padding:6px}input[type=number]{width:85px}input[type=checkbox]{accent-color:var(--accent)}label{display:flex;align-items:center;gap:7px}.app{display:grid;grid-template-columns:180px minmax(340px,1fr) 280px;grid-template-rows:54px minmax(0,1fr) 34px;height:100vh;min-height:520px}.top{grid-column:1/4;grid-row:1;display:flex;align-items:center;gap:7px;padding:5px 10px;background:var(--panel);border-bottom:1px solid var(--border);white-space:nowrap;min-width:0}
+button,input,select{font:inherit}button{border:1px solid var(--button-border);background:var(--button-bg);color:var(--button-ink);border-radius:6px;padding:7px 9px;cursor:pointer}button:hover{border-color:var(--accent)}button.active{background:var(--accent);color:var(--panel);border-color:var(--accent)}input,select{max-width:100%;background:var(--panel);color:var(--ink);border:1px solid var(--border);border-radius:5px;padding:6px}input[type=number]{width:85px}input[type=checkbox]{accent-color:var(--accent)}label{display:flex;align-items:center;gap:7px}.app{display:grid;grid-template-columns:180px minmax(340px,1fr) 280px;grid-template-rows:54px minmax(0,1fr) 34px;height:100vh;min-height:520px}.top{grid-column:1/4;grid-row:1;display:flex;align-items:center;gap:7px;padding:5px 10px;background:var(--panel);border-bottom:1px solid var(--border);white-space:nowrap;min-width:0}
 .top .toolbar-scroll{display:flex;align-items:center;gap:8px;overflow-x:auto;min-width:0;flex:1;scrollbar-width:thin}
 .top .toolbar-actions{display:flex;align-items:center;gap:6px;flex-shrink:0}
 .top .toolbar-actions button{padding:6px 8px}
@@ -24,7 +24,22 @@ button,input,select{font:inherit}button{border:1px solid var(--border);backgroun
 .dimensionbar .barlabel{font-size:11px;font-weight:750;color:var(--accent);letter-spacing:.03em}
 .dimensionbar .units{font-size:10px;opacity:.7}
 .selection-head{font-weight:700;margin-bottom:7px}.subhead{font-size:11px;font-weight:750;letter-spacing:.08em;color:var(--accent);margin:12px 0 7px}.selected-note{font-size:11px;opacity:.7;margin:5px 0 9px}
-.info{grid-column:1/4;grid-row:3;display:flex;justify-content:space-between;align-items:center;gap:12px;padding:5px 12px;border-top:1px solid var(--border);background:var(--panel);font-size:12px}.section{border-bottom:1px solid var(--border);padding-bottom:11px}.row{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin:7px 0}.right .tools{margin-top:auto}.toolgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.toolgrid button{min-height:38px}.field{display:grid;grid-template-columns:1fr 90px;align-items:center;gap:6px;margin:5px 0}.layer{display:flex;align-items:center;justify-content:space-between;padding:3px 0}.swatch{display:inline-block;width:11px;height:11px;border:1px solid #888;margin-right:5px}.warn{color:#b74b39;font-weight:600}.sheet-label{position:absolute;left:10px;bottom:7px;font-size:11px;opacity:.7;pointer-events:none}@media(max-width:850px){.app{grid-template-columns:115px minmax(250px,1fr) 210px}.bench,.right{padding:7px}.tag{display:none}}@media(max-width:640px){.app{grid-template-columns:90px minmax(200px,1fr);grid-template-rows:54px minmax(0,1fr) 210px 34px}.top,.info{grid-column:1/3}.top{grid-row:1}.stage,.bench{grid-row:2}.info{grid-row:4}.right{grid-column:1/3;grid-row:3;overflow:auto}.toolgrid{grid-template-columns:repeat(6,1fr)}}
+.info{grid-column:1/4;grid-row:3;display:flex;justify-content:space-between;align-items:center;gap:12px;padding:5px 12px;border-top:1px solid var(--border);background:var(--panel);font-size:12px}.section{border-bottom:1px solid var(--border);padding-bottom:11px}.row{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin:7px 0}.right .tools{margin-top:auto}.toolgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.toolgrid button{min-height:38px}.field{display:grid;grid-template-columns:1fr 90px;align-items:center;gap:6px;margin:5px 0}.layer{display:flex;align-items:center;justify-content:space-between;padding:3px 0}.swatch{display:inline-block;width:11px;height:11px;border:1px solid #888;margin-right:5px}.warn{color:#b74b39;font-weight:600}.top #themePopup.theme-popup{width:325px;max-height:min(78vh,680px);overflow-y:auto;overscroll-behavior:contain}
+.theme-popup .theme-title{font-weight:800;font-size:13px;margin:0 0 8px}
+.theme-popup .palette-list{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin:8px 0 12px}
+.theme-popup .palette-choice{padding:6px 3px;min-width:0;font-size:11px;text-align:center}
+.theme-popup .palette-swatches{display:flex;justify-content:center;gap:2px;margin-bottom:5px}
+.theme-popup .palette-swatches i{display:block;width:15px;height:14px;border:1px solid #0002;border-radius:2px}
+.theme-popup .palette-choice[aria-pressed=true]{outline:2px solid var(--accent);outline-offset:1px}
+.theme-popup .color-settings{display:grid;grid-template-columns:1fr 1fr;gap:6px 8px}
+.theme-popup .color-field{display:flex;flex-direction:column;align-items:stretch;gap:3px;font-size:11px;margin:0}
+.theme-popup .color-input{display:flex;gap:4px;align-items:center}
+.theme-popup .color-input input[type=color]{width:40px;height:30px;padding:2px;flex-shrink:0;cursor:pointer}
+.theme-popup .color-input input[type=text]{width:100%;min-width:0;font-family:monospace;font-size:11px;padding:5px 3px}
+.theme-popup .theme-actions{display:flex;gap:6px;margin:12px 0 4px}
+.theme-popup .theme-actions button{flex:1}
+.theme-popup .hint{font-size:11px;opacity:.75;margin:8px 0 0}
+.sheet-label{position:absolute;left:10px;bottom:7px;font-size:11px;opacity:.7;pointer-events:none}@media(max-width:850px){.app{grid-template-columns:115px minmax(250px,1fr) 210px}.bench,.right{padding:7px}.tag{display:none}}@media(max-width:640px){.app{grid-template-columns:90px minmax(200px,1fr);grid-template-rows:54px minmax(0,1fr) 210px 34px}.top,.info{grid-column:1/3}.top{grid-row:1}.stage,.bench{grid-row:2}.info{grid-row:4}.right{grid-column:1/3;grid-row:3;overflow:auto}.toolgrid{grid-template-columns:repeat(6,1fr)}}
 </style></head>
 <body data-theme="light"><div class="app">
 <header class="top">
@@ -36,7 +51,15 @@ button,input,select{font:inherit}button{border:1px solid var(--border);backgroun
 </div>
 </div>
 <div class="toolbar-actions">
-<details id="themeMenu"><summary>Theme ▾</summary><div class="menu" id="themePopup"><label>Appearance <select id="theme"><option value="light">Light</option><option value="dark">Dark</option><option value="wood">Wood</option></select></label></div></details>
+<details id="themeMenu"><summary>🎨 Theme ▾</summary><div class="menu theme-popup" id="themePopup">
+<div class="theme-title">BLOOMFORGE · APPEARANCE</div>
+<div class="muted">Select a palette or customize individual colors.</div>
+<div class="palette-list" id="themePalettes"></div>
+<div class="theme-title">CUSTOM COLORS</div>
+<div class="color-settings" id="themeColors"></div>
+<div class="theme-actions"><button type="button" id="themeReset">Reset Colors</button><button type="button" id="themeSave">Save as My Theme</button></div>
+<div class="hint">These settings affect the interface only. Black/Red/Green/Cyan fabrication layer colors stay unchanged.</div>
+</div></details>
 <details id="exportMenu"><summary>Export Settings ▾</summary><div class="menu" id="exportPopup">
 <label><input type="checkbox" id="exportRed" checked> Include red Score/Etch</label>
 <label><input type="checkbox" id="exportGuides"> Include green/cyan guides</label>
@@ -46,7 +69,7 @@ button,input,select{font:inherit}button{border:1px solid var(--border);backgroun
 <aside class="bench"><h3>PARTS BENCH</h3><div class="muted">Click a template to place a copy on the sheet.</div><div id="templates"></div><hr><div class="muted">Canvas: 12 × 12 in nominal<br>Sheet: 11.75 × 11.75 in<br>Material: 3 mm plywood</div></aside>
 <main class="stage" id="canvasStage"><div class="paper"><svg id="drawing" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" aria-label="Precision drawing canvas">
 <defs><pattern id="grid" width="3" height="3" patternUnits="userSpaceOnUse"><path d="M 3 0 H 0 V 3" fill="none" stroke="var(--grid)" stroke-width=".23"/></pattern></defs>
-<rect width="320" height="320" fill="var(--canvas)"/><rect x="10" y="10" width="298.45" height="298.45" fill="url(#grid)" stroke="#06aaca" stroke-width=".7" pointer-events="none"/>
+<rect width="320" height="320" fill="var(--canvas)"/><rect x="10" y="10" width="298.45" height="298.45" fill="url(#grid)" stroke="var(--canvas-frame)" stroke-width=".7" pointer-events="none"/>
 <g id="ticks"></g><g id="objects"></g><g id="draft"></g></svg><span class="sheet-label">Cyan: 11.75 × 11.75 in wood · x/y in mm</span><div id="zoomHud" aria-live="polite" style="position:absolute;top:9px;right:9px;pointer-events:none;background:var(--panel);border:1px solid var(--border);padding:5px 8px;border-radius:6px;color:var(--ink);font-weight:700">CANVAS 100%</div></div></main>
 <aside class="right">
 <section class="section"><h3>WORKSHOP</h3><div class="row"><label>Grid <select id="step"><option value="3">3 mm</option><option value="1">1 mm</option><option value="0.5">0.5 mm</option><option value="custom">Custom</option><option value="free">Free</option></select></label><label>Custom <input type="number" id="customStep" min="0.01" max="1000" step="0.01" value="3.00" style="width:81px" title="Enter grid spacing in millimeters, 0.01 to 1000"></label><span class="muted">mm</span></div><div class="row"><button id="zoomOut" title="Zoom out (Ctrl+-)">−</button><button id="zoomReset" title="Fit canvas (Ctrl+0)">100%</button><button id="zoomIn" title="Zoom in (Ctrl++)">+</button><span class="muted" id="zoomLabel">100%</span></div><div class="muted">Wheel over canvas: zoom drawing only · Ctrl+wheel: zoom drawing only · Shift+wheel: horizontal pan · Middle drag or Space+drag: pan · Ctrl+/−: zoom · Ctrl+0: reset</div><label><input id="snap" type="checkbox" checked> Snap locked</label><label><input id="guides" type="checkbox" checked> Show grid / sheet frame</label></section>
@@ -54,7 +77,7 @@ button,input,select{font:inherit}button{border:1px solid var(--border);backgroun
 <section class="section"><h3>POSITION & DIMENSIONS</h3><div id="properties" class="muted">Select or draw an object to edit it.</div><div class="row"><button id="duplicate">Duplicate</button><button id="delete">Delete</button><button id="undo">Undo</button><button id="redo">Redo</button></div></section>
 
 <section class="tools"><h3>TOOLS · BOTTOM RIGHT</h3><div class="toolgrid" id="tools"><button data-tool="select">Select</button><button data-tool="rect">Rect</button><button data-tool="circle">Circle</button><button data-tool="line">Line</button><button data-tool="slot">Slot</button><button data-tool="arc">Arc</button></div></section>
-</aside><footer class="info"><span id="status">Ready · select a tool · 3 mm snap enabled</span><span class="footerbrand">🪷 BloomForge · BUILD 0.1.6 · QuarterBitGames LLC · Precision Workbench</span></footer></div>
+</aside><footer class="info"><span id="status">Ready · select a tool · 3 mm snap enabled</span><span class="footerbrand">🪷 BloomForge · BUILD 0.1.7 · QuarterBitGames LLC · Precision Workbench</span></footer></div>
 <script>
 'use strict';
 const NS='http://www.w3.org/2000/svg', SHEET=298.45;
@@ -62,7 +85,7 @@ const colors={black:'#222222',red:'#d74141',green:'#269b4d',cyan:'#02a7c3'};
 const names={black:'Black · Cut',red:'Red · Score/Etch',green:'Green · Ruler/Snap',cyan:'Cyan · Alt/Framing'};
 const $=id=>document.getElementById(id);
 const svg=$('drawing'), objects=$('objects'), drafts=$('draft');
-let state={shapes:[],selected:null,tool:'select',layer:'black',step:3,gridMode:'3',customStep:3,snap:true,visible:{black:true,red:true,green:true,cyan:true},theme:'light'};
+let state={shapes:[],selected:null,tool:'select',layer:'black',step:3,gridMode:'3',customStep:3,snap:true,visible:{black:true,red:true,green:true,cyan:true},theme:'light',themeColors:null};
 let drag=null,history=[],future=[],spaceHeld=false;
 const BASE_VIEW={x:0,y:0,w:320,h:320};
 let view={...BASE_VIEW};
@@ -91,7 +114,7 @@ function attrShape(s){const a={fill:'none',stroke:colors[s.layer]||colors.black,
  return el('g');
 }
 function render(){objects.replaceChildren();for(const s of state.shapes){if(!state.visible[s.layer])continue;
-  const e=attrShape(s);e.setAttribute('pointer-events','none');if(s.id===state.selected){e.setAttribute('stroke-width','1.3');e.setAttribute('stroke-dasharray','2 1')}objects.append(e);
+  const e=attrShape(s);e.setAttribute('pointer-events','none');if(s.id===state.selected){e.setAttribute('stroke-width','1.3');e.setAttribute('stroke','var(--selection)');e.setAttribute('stroke-dasharray','2 1')}objects.append(e);
   // A wide transparent hit shape is independent of the fabrication geometry.
   // 14 screen pixels of clickable stroke, plus the interior for closed shapes.
   const hitArea=attrShape(s);hitArea.setAttribute('stroke','transparent');hitArea.setAttribute('stroke-width','14');hitArea.setAttribute('vector-effect','non-scaling-stroke');hitArea.setAttribute('pointer-events',s.kind==='rect'||s.kind==='slot'||s.kind==='circle'?'all':'stroke');
@@ -206,7 +229,68 @@ $('customStep').addEventListener('change',()=>{
  state.customStep=round(val);state.step=state.customStep;state.gridMode='custom';state.snap=true;refreshGrid();
 });
 $('snap').onchange=e=>{state.snap=state.gridMode!=='free'&&e.target.checked;refreshGrid()};
-$('theme').onchange=e=>{state.theme=e.target.value;document.body.dataset.theme=state.theme};
+// Theme colors are UI-only CSS variables, independent of Cut/Score/Guide layers.
+const THEME_KEYS={
+ bg:'Workspace',panel:'Sidebars / bars',ink:'Text',border:'Panel borders',
+ accent:'Accent / active',canvas:'Drawing paper',grid:'Measurement grid',
+ 'button-bg':'Tool buttons','button-ink':'Button text','button-border':'Button outlines',
+ 'guide-label':'Ruler numbers',selection:'Selection', 'canvas-frame':'Sheet frame'
+};
+const THEME_PRESETS={
+ light:{bg:'#eaf0f2',panel:'#ffffff',ink:'#243441',border:'#cbd5dd',accent:'#0297a6',canvas:'#ffffff',grid:'#dfe7e9','button-bg':'#ffffff','button-ink':'#243441','button-border':'#cbd5dd','guide-label':'#667785',selection:'#ea5b9f','canvas-frame':'#02a7c3'},
+ dark:{bg:'#202b35',panel:'#2e3b47',ink:'#eef4f8',border:'#53636d',accent:'#0fbed0',canvas:'#344452',grid:'#495968','button-bg':'#354652','button-ink':'#eef4f8','button-border':'#607583','guide-label':'#c0cdd5',selection:'#ff80ba','canvas-frame':'#3cd0df'},
+ wood:{bg:'#dfceb0',panel:'#f2e4ca',ink:'#4d3827',border:'#bda47d',accent:'#a35c31',canvas:'#fff9eb',grid:'#e9dcca','button-bg':'#f9ead0','button-ink':'#4d3827','button-border':'#baa079','guide-label':'#80684d',selection:'#a23875','canvas-frame':'#148f9b'},
+ bloom:{bg:'#e5f8f5',panel:'#f8fffe',ink:'#164744',border:'#9ccfc8',accent:'#c83d92',canvas:'#ffffff',grid:'#cce9e4','button-bg':'#eafff8','button-ink':'#164744','button-border':'#95cfc6','guide-label':'#357b74',selection:'#e1569e','canvas-frame':'#00b4b8'},
+ midnight:{bg:'#100f24',panel:'#1d1a37',ink:'#f0eaff',border:'#554779',accent:'#a88cff',canvas:'#25203f',grid:'#4e436e','button-bg':'#342c55','button-ink':'#f0eaff','button-border':'#6b568e','guide-label':'#c4b8e9',selection:'#ff70a8','canvas-frame':'#55d7e4'},
+ blueprint:{bg:'#092d43',panel:'#123d55',ink:'#e0f6ff',border:'#41718b',accent:'#ffd66b',canvas:'#0b3c59',grid:'#315c77','button-bg':'#15516a','button-ink':'#e0f6ff','button-border':'#568199','guide-label':'#b1dff3',selection:'#ff9c60','canvas-frame':'#56c8eb'}
+};
+function isHex(v){return typeof v==='string'&&/^#[0-9a-fA-F]{6}$/.test(v)}
+function safeColors(input,base=THEME_PRESETS.light){const result={...base};if(input&&typeof input==='object'){for(const key of Object.keys(THEME_KEYS)){if(isHex(input[key]))result[key]=input[key]}}return result}
+function applyColors(paletteName,colorsOverride=null){
+ const base=THEME_PRESETS[paletteName]||THEME_PRESETS.light;
+ const result=safeColors(colorsOverride,base);
+ state.theme=paletteName in THEME_PRESETS?paletteName:'custom';
+ state.themeColors=result;
+ document.body.dataset.theme='custom';
+ for(const [name,color] of Object.entries(result))document.documentElement.style.setProperty('--'+name,color);
+ renderThemeControls();
+}
+function renderThemeControls(){
+ for(const btn of $('themePalettes').querySelectorAll('[data-palette]'))btn.setAttribute('aria-pressed',String(state.theme===btn.dataset.palette));
+ for(const [key,color] of Object.entries(state.themeColors||THEME_PRESETS.light)){
+  const field=document.getElementById('color-'+key);if(!field)continue;
+  field.querySelector('[type=color]').value=color;field.querySelector('[type=text]').value=color;
+ }
+}
+for(const [name,palette] of Object.entries(THEME_PRESETS)){
+ const button=document.createElement('button');button.type='button';button.className='palette-choice';button.dataset.palette=name;
+ const swatches=document.createElement('span');swatches.className='palette-swatches';
+ for(const key of ['bg','panel','canvas','accent']){const chip=document.createElement('i');chip.style.background=palette[key];swatches.append(chip)}
+ const title=document.createElement('span');title.textContent=name.charAt(0).toUpperCase()+name.slice(1);
+ button.append(swatches,title);button.onclick=()=>applyColors(name);$('themePalettes').append(button);
+}
+for(const [key,label] of Object.entries(THEME_KEYS)){
+ const row=document.createElement('label');row.className='color-field';row.id='color-'+key;
+ const name=document.createElement('span');name.textContent=label;
+ const pair=document.createElement('div');pair.className='color-input';
+ const picker=document.createElement('input');picker.type='color';picker.setAttribute('aria-label',label+' color');
+ const value=document.createElement('input');value.type='text';value.maxLength=7;value.setAttribute('aria-label',label+' hex value');
+ function update(val){if(!isHex(val)){value.value=state.themeColors[key];return}applyColors('custom',{...state.themeColors,[key]:val.toLowerCase()})}
+ picker.addEventListener('input',()=>update(picker.value));
+ value.addEventListener('change',()=>update(value.value.trim()));
+ pair.append(picker,value);row.append(name,pair);$('themeColors').append(row);
+}
+$('themeReset').onclick=()=>applyColors('light');
+$('themeSave').onclick=()=>{
+ try{localStorage.setItem('bloomforge-user-theme-v1',JSON.stringify(state.themeColors));$('themeSave').textContent='Saved ✓';}
+ catch(err){alert('Browser could not store your theme: '+err.message)}
+};
+function restoreTheme(){
+ let saved=null;try{saved=JSON.parse(localStorage.getItem('bloomforge-user-theme-v1')||'null')}catch(_){}
+ if(saved&&Object.keys(THEME_KEYS).every(k=>isHex(saved[k]))){const button=document.createElement('button');button.type='button';button.className='palette-choice';button.dataset.palette='mine';button.textContent='★ My Theme';button.onclick=()=>applyColors('custom',saved);$('themePalettes').append(button)}
+ applyColors(state.theme,state.themeColors);
+}
+
 $('guides').onchange=e=>{svg.querySelector('rect[fill="url(#grid)"]').style.display=e.target.checked?'':'none';$('ticks').style.display=e.target.checked?'':'none'};
 $('delete').onclick=()=>{if(!state.selected)return;remember();state.shapes=state.shapes.filter(x=>x.id!==state.selected);state.selected=null;render()};
 $('duplicate').onclick=()=>{let s=state.shapes.find(x=>x.id===state.selected);if(!s)return;remember();let t=copy(s);t.id=uid();t.x=round(t.x+state.step);t.y=round(t.y+state.step);if('x2'in t){t.x2+=state.step;t.y2+=state.step}state.shapes.push(t);state.selected=t.id;render()};
@@ -229,15 +313,15 @@ if((e.key==='Delete'||e.key==='Backspace')&&state.selected)$('delete').click()},
 function download(text,filename,type){let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type}));a.download=filename;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),5000)}
 $('save').onclick=()=>download(JSON.stringify({format:'BloomForge',version:1,material:{thicknessMm:3,sheetMm:SHEET},state},null,2),'bloomforge-project.json','application/json');
 $('open').onclick=()=>$('file').click();
-$('file').onchange=async e=>{let file=e.target.files[0];if(!file)return;try{let parsed=JSON.parse(await file.text());if(parsed.format!=='BloomForge'||parsed.version!==1||!Array.isArray(parsed.state?.shapes))throw Error('Not a BloomForge v1 project');for(let s of parsed.state.shapes){if(!['rect','circle','slot','line','arc'].includes(s.kind)||!colors[s.layer])throw Error('Unknown shape/layer')}state={...state,...parsed.state,selected:null};state.customStep=Number.isFinite(state.customStep)?state.customStep:3;state.gridMode=['3','1','0.5','custom','free'].includes(state.gridMode)?state.gridMode:(['3','1','0.5'].includes(String(state.step))?String(state.step):'custom');if(!Number.isFinite(state.step)||state.step<=0)state.step=3;refreshGrid();$('theme').value=state.theme;document.body.dataset.theme=state.theme;history=[];future=[];render()}catch(err){alert('Could not open project: '+err.message)}e.target.value=''};
+$('file').onchange=async e=>{let file=e.target.files[0];if(!file)return;try{let parsed=JSON.parse(await file.text());if(parsed.format!=='BloomForge'||parsed.version!==1||!Array.isArray(parsed.state?.shapes))throw Error('Not a BloomForge v1 project');for(let s of parsed.state.shapes){if(!['rect','circle','slot','line','arc'].includes(s.kind)||!colors[s.layer])throw Error('Unknown shape/layer')}state={...state,...parsed.state,selected:null};state.customStep=Number.isFinite(state.customStep)?state.customStep:3;state.gridMode=['3','1','0.5','custom','free'].includes(state.gridMode)?state.gridMode:(['3','1','0.5'].includes(String(state.step))?String(state.step):'custom');if(!Number.isFinite(state.step)||state.step<=0)state.step=3;refreshGrid();applyColors(state.theme,state.themeColors);history=[];future=[];render()}catch(err){alert('Could not open project: '+err.message)}e.target.value=''};
 $('new').onclick=()=>{if(state.shapes.length&&!confirm('Start a new blank project? Unsaved geometry will be lost.'))return;remember();state.shapes=[];state.selected=null;render()};
 $('export').onclick=()=>{const guides=$('exportGuides').checked,red=$('exportRed').checked;const permitted=new Set(['black',...(red?['red']:[]),...(guides?['green','cyan']:[])]);const included=state.shapes.filter(s=>permitted.has(s.layer));let root=el('svg',{xmlns:NS,width:'298.45mm',height:'298.45mm',viewBox:'10 10 298.45 298.45'});root.append(document.createComment('BloomForge export. Confirm xTool laser operations before cutting.'));for(let key of Object.keys(colors)){if(!permitted.has(key))continue;let group=el('g',{'data-layer':key,id:'bloomforge-'+key});for(let s of included.filter(x=>x.layer===key))group.append(attrShape(s));root.append(group)}let text=new XMLSerializer().serializeToString(root);download('<?xml version="1.0" encoding="UTF-8"?>\n'+text,'bloomforge-cut-layout.svg','image/svg+xml')};
-const ticks=$('ticks');for(let mm=0;mm<=300;mm+=30){let x=10+mm;if(x<=310){let top=el('text',{x,y:7,'font-size':'4','text-anchor':'middle',fill:'var(--ink)'});top.textContent=mm;ticks.append(top)}let y=10+mm;if(y<=310){let left=el('text',{x:7,y:y+1,'font-size':'4','text-anchor':'end',fill:'var(--ink)'});left.textContent=mm;ticks.append(left)}}
+const ticks=$('ticks');for(let mm=0;mm<=300;mm+=30){let x=10+mm;if(x<=310){let top=el('text',{x,y:7,'font-size':'4','text-anchor':'middle',fill:'var(--guide-label)'});top.textContent=mm;ticks.append(top)}let y=10+mm;if(y<=310){let left=el('text',{x:7,y:y+1,'font-size':'4','text-anchor':'end',fill:'var(--ink)'});left.textContent=mm;ticks.append(left)}}
 // Position top-bar menus under their buttons while keeping them visible above the canvas.
 for(const [menu,popup] of [['themeMenu','themePopup'],['exportMenu','exportPopup']]){
  const d=$(menu),p=$(popup);
  d.addEventListener('toggle',()=>{if(d.open){const r=d.getBoundingClientRect();p.style.top=(r.bottom+4)+'px';p.style.left=Math.max(6,Math.min(r.left,window.innerWidth-250))+'px'}});
 }
 document.addEventListener('pointerdown',e=>{for(const id of ['themeMenu','exportMenu']){const d=$(id);if(d.open&&!d.contains(e.target))d.open=false}},true);
-setTool('select');refreshGrid();resetZoom();
+restoreTheme();setTool('select');refreshGrid();resetZoom();
 </script></body></html>
