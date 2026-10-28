@@ -1,3 +1,11 @@
+## Castle tab repair — build 0.1.21
+
+- Corrected the prior 0.1.20 castle part being **invisible** because its vector object lacked a layer. New castle tabs are assigned to the black cut layer.
+- Replaced the unconnected open square wave with a **single closed, symmetric 12 × 6 mm part**: two **3 × 3 mm teeth**, one at each end of a 12 mm edge, a 6 mm-wide center recess, and a 3 mm-deep backing base.
+- Exact polygon in mm: `(0,0) → (3,0) → (3,3) → (9,3) → (9,0) → (12,0) → (12,6) → (0,6) → close`. No dangling endpoints. The Parts Bench thumbnail uses the same closed outline.
+- Validated all edges are horizontal/vertical, left/right reflection symmetry, overall 12 × 6 mm bounds, and closed path. The teeth each measure 3 × 3 mm.
+- Unlike the previous open profile, this is a **closed tab piece**. Its ends meet to form a continuous cut line. For use as an actual joining edge on a larger panel, the panel geometry must be integrated or Boolean-unioned to avoid double-cutting common edges. Confirm laser kerf and mating tolerances before cutting.
+
 ## Castle edge Parts Bench profile — build 0.1.20
 
 - Adds **Castle edge · 12 × 3 mm** to the Parts Bench, with a matching bold square-wave thumbnail.
