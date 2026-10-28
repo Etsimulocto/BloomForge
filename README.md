@@ -37,6 +37,18 @@ Current capabilities:
 - Save/open **BloomForge JSON project** (editable shapes and workspace state)
 - Export an **SVG with millimeter dimensions** for import into xTool Creative Space
 
+## Appearance Theme Studio — build 0.1.7
+
+Open **🎨 Theme** in the compact top-right toolbar for an expanded scrollable theme editor.
+
+- Six preset palettes: **Light, Dark, Wood, Bloom, Midnight, Blueprint**.
+- Live color pickers and editable six-digit hex values for **workspace, panels, text, borders, accents, drawing paper, grid, tool buttons, button text, button borders, ruler labels, selection highlight, and sheet framing**.
+- Click **Save as My Theme** to preserve a palette in the current browser's local storage. A **My Theme** preset appears immediately and on subsequent launches in that browser profile.
+- **Reset Colors** restores Light; the current theme values are also included when saving BloomForge JSON project files.
+- Theme and appearance colors are deliberately **separate** from the four fabrication-layer stroke colors used in SVG exports.
+- Custom theme storage is local to the Pi's Chromium profile and does not sync to other computers.
+- The theme menu is scrollable so it fits smaller Raspberry Pi displays.
+
 ## Compact toolbar — build 0.1.6
 
 - The dimension inputs (selected part, X/Y, W/H) now share one compact top bar with project actions.
