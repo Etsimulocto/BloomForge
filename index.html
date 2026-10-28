@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>BloomForge 0.1.30 · QuarterBitGames</title>
+<title>BloomForge 0.1.31 · QuarterBitGames</title>
 <style>
 :root{--bg:#eaf0f2;--panel:#ffffff;--ink:#243441;--border:#cbd5dd;--accent:#0297a6;--canvas:#ffffff;--grid:#dfe7e9;--button-bg:#ffffff;--button-ink:#243441;--button-border:#cbd5dd;--guide-label:#667785;--selection:#ea5b9f;--canvas-frame:#02a7c3}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px system-ui,Segoe UI,Arial,sans-serif}
@@ -93,8 +93,8 @@ button,input,select{font:inherit}button{border:1px solid var(--button-border);ba
 <section class="section"><h3>FOUR LAYERS</h3><div id="layers"></div><div class="muted">Green and cyan are guides: excluded from manufacturing SVG by default.</div></section>
 <section class="section"><h3>POSITION & DIMENSIONS</h3><div class="selected-note" id="symmetryState" aria-live="polite">SELECT A PART</div><div id="properties" class="muted">Select or draw an object to edit it.</div><div class="row"><button id="duplicate">Duplicate</button><button id="delete">Delete</button><button id="undo">Undo</button><button id="redo">Redo</button></div></section>
 
-<section class="tools"><h3>TOOLS · BOTTOM RIGHT</h3><div class="toolgrid" id="tools"><button data-tool="select">Select</button><button data-tool="rect">Rect</button><button data-tool="circle">Circle</button><button data-tool="line">Line</button><button data-tool="slot">Slot</button><button data-tool="arc">Arc</button><button data-tool="vector">Vector</button><button data-tool="nodes">Nodes</button></div></section>
-</aside><footer class="info"><span><span id="status">Ready · select a tool · 3 mm snap enabled</span> · <span id="interactionStatus">Ready for node edits</span></span><span class="footerbrand">🪷 BloomForge · BUILD 0.1.30 · QuarterBitGames LLC · Precision Workbench</span></footer></div>
+<section class="tools"><h3>TOOLS · BOTTOM RIGHT</h3><div class="toolgrid" id="tools"><button data-tool="select">Select</button><button data-tool="rect">Rect</button><button data-tool="circle">Circle</button><button data-tool="line">Line</button><button data-tool="slot">Slot</button><button data-tool="arc">Arc</button><button data-tool="vector">Vector</button><button data-tool="nodes">Nodes</button><button data-tool="cut-line" title="Select a vector and click a line segment or node to remove it">✂ Cut Line</button></div></section>
+</aside><footer class="info"><span><span id="status">Ready · select a tool · 3 mm snap enabled</span> · <span id="interactionStatus">Ready for node edits</span></span><span class="footerbrand">🪷 BloomForge · BUILD 0.1.31 · QuarterBitGames LLC · Precision Workbench</span></footer></div>
 <script>
 'use strict';
 const NS='http://www.w3.org/2000/svg', SHEET=298.45;
@@ -173,7 +173,8 @@ function render(){
   const hitArea=applyRotation(attrShape(s),s);hitArea.setAttribute('stroke','transparent');hitArea.setAttribute('stroke-width','14');hitArea.setAttribute('vector-effect','non-scaling-stroke');hitArea.setAttribute('pointer-events',s.kind==='rect'||s.kind==='slot'||s.kind==='circle'?'all':'stroke');
   if(['rect','slot','circle'].includes(s.kind))hitArea.setAttribute('fill','transparent');
   hitArea.style.cursor='grab';objects.append(hitArea);
- }if(state.tool==='nodes'||state.tool==='select')renderNodeHandles();
+ }if(state.tool==='nodes'||state.tool==='select'||state.tool==='cut-line')renderNodeHandles();
+ if(state.tool==='cut-line')renderCutSegments();
  renderProperties();renderTopBar();$('status').textContent=`${state.tool.toUpperCase()} · ${state.shapes.length} shapes · ${state.gridMode==='free'?'FREE drawing':state.step+' mm grid'} · ${state.snap&&state.gridMode!=='free'?'snap ON':'snap OFF'}`;}
 // Normalize the editor's X/Y/W/H fields for every primitive.
  // Circles use center X/Y and diameter W/H. Lines/arcs use start X/Y and absolute width/height.
@@ -486,12 +487,12 @@ function applyVectorNodeDrag(shape,baseline,subIndex,nodeIndex,mode,position){
 function renderNodeHandles(){
  const s=state.shapes.find(v=>v.id===state.selected);
  if(!s)return;
- if(s.kind!=='vector'){renderPrimitiveHandles(s);return}
+ if(s.kind!=='vector'){if(state.tool!=='cut-line')renderPrimitiveHandles(s);return}
  for(let si=0;si<s.subpaths.length;si++){
   const sub=s.subpaths[si];
   for(let ni=0;ni<sub.points.length;ni++){
    const p=sub.points[ni],selected=activeNode?.sub===si&&activeNode?.index===ni;
-   for(const mode of ['in','out']){
+   for(const mode of (state.tool==='cut-line'?[]:['in','out'])){
     const x=p[mode+'X'],y=p[mode+'Y'];if(x==null)continue;
     const anchor=rotateCoord(p,s),control=rotateCoord({x,y},s);
     objects.append(el('line',{x1:anchor.x,y1:anchor.y,x2:control.x,y2:control.y,stroke:'var(--selection)','stroke-width':'.15','pointer-events':'none'}));
@@ -500,6 +501,71 @@ function renderNodeHandles(){
    const display=rotateCoord(p,s);appendNodeMarker(objects,display.x,display.y,'node',si,ni,selected);
   }
  }
+}
+// Cut Line operates on individual real SVG segments, including cubic curves.
+// It never changes an adjacent hole contour when cutting another contour.
+function renderCutSegments(){
+ const s=state.shapes.find(q=>q.id===state.selected);
+ if(!s||s.kind!=='vector')return;
+ for(let si=0;si<s.subpaths.length;si++){
+  const sub=s.subpaths[si],n=sub.points.length;
+  for(let i=0;i<(sub.closed?n:n-1);i++){
+   const a=sub.points[i],b=sub.points[(i+1)%n];
+   const a0=rotateCoord(a,s),b0=rotateCoord(b,s);
+   let d='M '+a0.x+' '+a0.y+' ';
+   if(a.outX!=null||b.inX!=null){
+    const c1=rotateCoord(a.outX!=null?{x:a.outX,y:a.outY}:a,s);
+    const c2=rotateCoord(b.inX!=null?{x:b.inX,y:b.inY}:b,s);
+    d+='C '+c1.x+' '+c1.y+' '+c2.x+' '+c2.y+' '+b0.x+' '+b0.y;
+   }else d+='L '+b0.x+' '+b0.y;
+   const line=el('path',{d,fill:'none',stroke:'transparent','stroke-width':'16',
+    'vector-effect':'non-scaling-stroke','pointer-events':'stroke',
+    'data-cut-sub':si,'data-cut-edge':i});
+   line.style.cursor='crosshair';objects.append(line);
+  }
+ }
+}
+// A closed ring cut at edge i becomes an open ring starting at node i+1.
+// An open line cut at edge i becomes two open lines, never a bridge across the gap.
+function cutVectorSegment(shape,si,i){
+ const sub=shape.subpaths[si];if(!sub)return false;
+ const n=sub.points.length;if(i<0||i>=(sub.closed?n:n-1))return false;
+ const p=copy(sub.points);
+ if(sub.closed){
+  const ordered=p.slice(i+1).concat(p.slice(0,i+1));
+  // Remove the incoming/outgoing control handles of the now-open endpoints.
+  delete ordered[0].inX;delete ordered[0].inY;
+  delete ordered[ordered.length-1].outX;delete ordered[ordered.length-1].outY;
+  shape.subpaths[si]={closed:false,points:ordered};
+ }else{
+  const left=p.slice(0,i+1),right=p.slice(i+1);
+  const end=left[left.length-1],start=right[0];
+  delete end.outX;delete end.outY;delete start.inX;delete start.inY;
+  shape.subpaths.splice(si,1,{closed:false,points:left},{closed:false,points:right});
+ }
+ return true;
+}
+function cutVectorNode(shape,si,ni){
+ const sub=shape.subpaths[si];if(!sub||ni<0||ni>=sub.points.length)return false;
+ if(sub.points.length<=2){shape.subpaths.splice(si,1);return true}
+ const p=sub.points;
+ // Removing a node reconnects its neighbors with a straight join.
+ const prev=p[(ni-1+p.length)%p.length],next=p[(ni+1)%p.length];
+ delete prev.outX;delete prev.outY;delete next.inX;delete next.inY;
+ p.splice(ni,1);
+ if(sub.closed&&p.length<3)sub.closed=false;
+ return true;
+}
+function performCut(subIndex,index,mode){
+ const shape=state.shapes.find(s=>s.id===state.selected);
+ if(!shape||shape.kind!=='vector')return;
+ remember();
+ const worked=mode==='node'?cutVectorNode(shape,subIndex,index):cutVectorSegment(shape,subIndex,index);
+ if(!worked){history.pop();return}
+ shape.subpaths=shape.subpaths.filter(sub=>sub.points.length>=2);
+ if(!shape.subpaths.length){state.shapes=state.shapes.filter(s=>s.id!==shape.id);state.selected=null}
+ activeNode=null;render();
+ $('interactionStatus').textContent=mode==='node'?'CUT · node removed':'CUT · line segment removed';
 }
 function finishVector(){
  if(!vectorDraft)return;
@@ -554,6 +620,19 @@ $('legoGridToggle').addEventListener('change',e=>{state.legoGridVisible=e.target
 $('legoPlaceMode').addEventListener('click',()=>setTool(state.tool==='lego-hole'?'select':'lego-hole'));
 function hit(ev){return ev.target.closest('[data-id]')?.getAttribute('data-id')}
 svg.addEventListener('pointerdown',ev=>{if(ev.button===1||(ev.button===0&&spaceHeld)){drag={kind:'pan',lastX:ev.clientX,lastY:ev.clientY};svg.setPointerCapture(ev.pointerId);ev.preventDefault();return}if(ev.button!==0)return;
+ if(state.tool==='cut-line'){
+   const node=ev.target.closest('[data-handle="node"]');
+   const segment=ev.target.closest('[data-cut-edge]');
+   if(node&&state.selected){
+    performCut(Number(node.getAttribute('data-sub')),Number(node.getAttribute('data-node')),'node');
+   }else if(segment&&state.selected){
+    performCut(Number(segment.getAttribute('data-cut-sub')),Number(segment.getAttribute('data-cut-edge')),'edge');
+   }else{
+    const id=hit(ev);state.selected=id||null;render();
+    $('interactionStatus').textContent='CUT LINE · select vector, then click a segment or node';
+   }
+   ev.preventDefault();return;
+ }
  if(state.tool==='lego-hole'){
    const placed=toggleLegoHole(rawPoint(ev));
    $('interactionStatus').textContent=placed?'LEGO · 4.8 mm cut hole toggled':'LEGO · outside 8 mm hole grid';
@@ -720,7 +799,7 @@ function legoCorner2x2Part(x=26,y=26,layer='black'){
  const perimeter=[
   p(0,0),p(8,0),p(8,8-r,{outX:round(x+8),outY:round(y+8-r+ka)}),
   p(8+r,8,{inX:round(x+8+r-ka),inY:round(y+8)}),
-  p(16,8),p(16,16),p(0,16)
+  p(16,8),p(16,16)
  ];
  const hole=(cx,cy)=>{
   const h=(dx,dy,ix,iy,ox,oy)=>({
@@ -737,12 +816,11 @@ function legoCorner2x2Part(x=26,y=26,layer='black'){
  };
  return {id:uid(),kind:'vector',layer,profile:'lego-corner-2x2',
   rotation:0,symmetryLocked:false,studPivot:{x:round(x+4),y:round(y+4)},
-  subpaths:[{closed:true,points:perimeter},hole(4,4),hole(4,12),hole(12,12)]};
+  subpaths:[{closed:false,points:perimeter},hole(4,4),hole(4,12),hole(12,12)]};
 }
 function place(kind,w,h,layer='black'){
  remember();let s;
  if(kind==='lego-2x2-corner')s=legoCorner2x2Part(26,26,layer);
- else if(kind==='lego-end-corner')s=legoEndCornerPart(30,30,layer);
  else if(kind==='corner-cutout')s=cornerCutoutPart(30,30,w,h,layer);
  else if(kind==='lego-inner-corner')s=legoInnerCornerPart(30,30,layer);
  else if(kind==='castle-edge')s={id:uid(),kind:'vector',layer,subpaths:[{closed:false,points:castleEdgePoints(30,30)}],symmetryLocked:false,rotation:0};
@@ -750,7 +828,7 @@ function place(kind,w,h,layer='black'){
  else s={id:uid(),kind,layer,x:30,y:30,w,h};
  state.shapes.push(s);state.selected=s.id;setTool('select');
 }
-const templates=[['3 mm hole','circle',3,3],['2.5 mm hole','circle',2.5,2.5],['6 × 18 slot','slot',18,6],['3 × 12 tab','rect',12,3],['Castle corner · 3×3×3×3','castle-edge',12,3],['LEGO stud relief · 8×8','lego-inner-corner',8,8],['LEGO corner notch · 4 mm arms','corner-cutout',4,4],['LEGO end corner · mitred 8 mm','lego-end-corner',8,8],['LEGO 2×2 corner · 3 holes','lego-2x2-corner',16,16],['30 × 30 panel','rect',30,30],['60 × 60 panel','rect',60,60],['3 mm ruler','rect',30,3,'green'],['Sheet frame','rect',SHEET,SHEET,'cyan']];
+const templates=[['3 mm hole','circle',3,3],['2.5 mm hole','circle',2.5,2.5],['6 × 18 slot','slot',18,6],['3 × 12 tab','rect',12,3],['Castle corner · 3×3×3×3','castle-edge',12,3],['LEGO stud relief · 8×8','lego-inner-corner',8,8],['LEGO corner notch · 4 mm arms','corner-cutout',4,4],['LEGO 2×2 corner · 3 holes','lego-2x2-corner',16,16],['30 × 30 panel','rect',30,30],['60 × 60 panel','rect',60,60],['3 mm ruler','rect',30,3,'green'],['Sheet frame','rect',SHEET,SHEET,'cyan']];
 // The Parts Bench has its own visible, double-weight SVG geometry previews.
 // These are UI thumbnails only; placement and fabrication/export dimensions remain unchanged.
 function benchIcon(kind,w,h,layer){
@@ -761,9 +839,6 @@ function benchIcon(kind,w,h,layer){
  let shape;
  if(kind==='lego-2x2-corner'){
   shape=el('path',{d:vectorPath(legoCorner2x2Part(0,0)),transform:'translate(5 5) scale(1.375)'});
- }
- else if(kind==='lego-end-corner'){
-  shape=el('path',{d:vectorPath({subpaths:[{closed:false,points:legoEndCornerPoints(0,0)}]}),transform:'translate(5 5) scale(2.75)'});
  }
  else if(kind==='corner-cutout'){
   shape=el('path',{d:vectorPath({subpaths:[{closed:false,points:cornerCutoutPoints(0,0,4,4)}]}),transform:'translate(5 5) scale(5.5)'});
