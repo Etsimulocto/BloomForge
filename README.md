@@ -37,6 +37,17 @@ Current capabilities:
 - Save/open **BloomForge JSON project** (editable shapes and workspace state)
 - Export an **SVG with millimeter dimensions** for import into xTool Creative Space
 
+## Symmetry Lock — build 0.1.12
+
+- Select a part and use the **🔒 Symmetry / 🔓 Free Nodes** button in the compact top toolbar.
+- **Locked:** resizing a rectangle or slot from a corner maintains its center and adjusts opposite sides evenly. Circles remain circular.
+- **Unlocked:** rectangles, circles, rounded slots and lines are converted to editable SVG vector paths, permitting each node to move separately. A circle can therefore be reshaped into an asymmetric outline, not merely an ellipse.
+- For an editable closed vector with an even number of points, **relocking** makes dragging an anchor or control handle move its opposite partner in the opposing direction. This is an editing constraint; it does not automatically repair a previously asymmetric shape.
+- Unlocking a primitive is a **path conversion**. The resulting path exports normally and remains editable in BloomForge project JSON; Undo can restore the prior primitive immediately after conversion.
+- Open line vectors and odd-node contours do not have an automatic opposite-node partner. Legacy arc editing remains limited.
+- Node markers remain **0.5 mm diameter**, with separate invisible grab targets.
+- Pi mouse interactions and physical xTool export still need real-device verification.
+
 ## Click-to-edit nodes — build 0.1.11
 
 - With **Select** active, clicking a part now shows its **0.5 mm node dots** immediately; no switch to the Nodes tool is required.
