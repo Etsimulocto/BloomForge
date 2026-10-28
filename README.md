@@ -37,6 +37,13 @@ Current capabilities:
 - Save/open **BloomForge JSON project** (editable shapes and workspace state)
 - Export an **SVG with millimeter dimensions** for import into xTool Creative Space
 
+## Cursor coordinate readout — build 0.1.8
+
+- The compact top toolbar now shows **CURSOR X / Y** in millimeters whenever the pointer is over the SVG drawing canvas.
+- The readout updates during selection, drawing, and dragging, including while zoomed or panned.
+- Cursor coordinates are **actual unsnapped coordinates**, displayed to two decimals; snapping still applies to placed geometry separately.
+- Moving the pointer outside the SVG clears the coordinate readout.
+
 ## Appearance Theme Studio — build 0.1.7
 
 Open **🎨 Theme** in the compact top-right toolbar for an expanded scrollable theme editor.
