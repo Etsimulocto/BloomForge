@@ -1,3 +1,92 @@
+# BloomForge 🪷⚒️
+
+**Design it. Snap it. Build it.**
+
+**Current build: 0.1.33** · QuarterBitGames LLC · Offline, Raspberry Pi-first SVG drafting for laser-cut plywood and LEGO-compatible mounting patterns.
+
+BloomForge is a self-contained `index.html` editor that runs in a graphical Chromium desktop on Raspberry Pi. Design in **millimeters**, arrange parts on an **11.75 × 11.75 in (298.45 × 298.45 mm)** wood sheet reference, save editable JSON projects, and export SVG for **xTool Creative Space (XCS)**. A 12 × 12 in nominal canvas surrounds the usable-sheet boundary.
+
+> **Fabrication safety:** The visual canvas is not a cut simulation. Imported SVG colors do not configure machine operations automatically. Verify scale, Cut/Score assignments, open paths, duplicate/overlapping cuts, minimum bridges, and kerf in XCS. Test new joints and stud fits on scrap first.
+
+## Launch and update
+
+**First launch on a Raspberry Pi with desktop, keyboard, mouse and Chromium:**
+
+```sh
+git clone https://github.com/Etsimulocto/BloomForge.git
+cd BloomForge
+sh launch-pi.sh
+```
+
+**Update an existing checkout:**
+
+```sh
+cd ~/BloomForge
+git pull
+sh launch-pi.sh
+```
+
+Alternatively open `index.html` directly in a modern desktop browser. There is **no build step, server, sign-in or Internet requirement** for editing. The Pi launcher opens Chromium in an app-style window, not a native packaged GUI or headless service. JSON and SVG files download through Chromium; keep copies of your designs.
+
+## Current tool map
+
+| Area | Tools / behavior |
+| --- | --- |
+| **Top toolbar** | Selected part's exact X/Y/W/H in mm, rotation 0–360°, cursor coordinates; **🔒 Symmetry / 🔓 Free Nodes**; Theme, Export Settings, New, Save, Open, Export |
+| **Parts Bench (left)** | Hole, slot, tab, panel, castle/finger-joint, LEGO stud-relief and LEGO corner templates with outline previews |
+| **Workshop (right)** | 3/1/0.5 mm or custom grid, Free drawing, snap, zoom/pan, four layer visibility/color pickers, secondary LEGO stud guide and hole placement |
+| **Precision Geometry (right)** | Numeric **Angle °**, **Length mm**, and **Fillet radius mm**; Apply to selected line and Round selected node |
+| **Tools (bottom right)** | Select, Rect, Circle, Line, Slot, Arc, Vector, Nodes, **✂ Cut Line**, **📐 Angle Line** |
+| **Inspector (right)** | Position, dimensions, layer and vector contour/node editing controls |
+
+### Exact angle lines and radius fillets (0.1.33)
+
+**Create a 17° line:** Enter `17` in **Angle °** and your desired **Length mm** (e.g. `30`), choose **📐 Angle Line**, then click its start position on the canvas. **0° goes right; +90° goes up**. Decimal and negative angles work. The start follows the active woodworking snap; the calculated end uses precise coordinates **without snapping away the requested angle**.
+
+**Change an existing straight line:** Select a Line, change Angle ° / Length mm, then click **Apply to selected line**. Its starting position is preserved. This does not automatically constrain arbitrary vector edges.
+
+**Round a vector corner:** Select a vector, use **Nodes**, click a sharp anchor point, enter a **Fillet radius mm** (e.g. `3`), then press **Round selected node**. The two neighboring edges must be straight and long enough; otherwise the operation is refused. The corner is replaced by a cubic Bézier approximation of a circular fillet. Radius is **not a permanent parametric constraint** after you edit its nodes. Chamfer, angle-between-edges constraints and custom arc sweep are **not implemented**.
+
+### Compound vectors and Cut Line
+
+- **Vector:** click successive points; press **Enter** or double-click to finish; **Esc** cancels a draft. Use **Nodes** or **Select** to edit anchors and Bézier handles. A vector may contain multiple open or closed contours.
+- **✂ Cut Line:** select an existing vector by clicking its outline, then click a **line segment** or an individual **node** to delete it. Cutting a closed contour opens it; cutting an open segment splits it into two contours. Node deletion reconnects neighboring points. **Undo / Redo** records the edits.
+- **Symmetry vs Free Nodes:** symmetric primitive resize keeps opposing bounds coordinated; unlocking a primitive can convert it to a compound vector. Closed even-node vectors may mirror opposite node motions. Relocking does not repair earlier asymmetric geometry.
+- **Caution:** Opening a contour does **not** automatically reconnect it to another contour or form a usable panel perimeter. Boolean union, welded joins and full SVG import are not yet available.
+
+### LEGO-compatible grid and Bench parts
+
+- **Show 8 mm stud grid** overlays **4.8 mm** nominal hole guides on **8 mm center-to-center pitch**, independent of the usual 3 mm woodworking grid. Its origin is fixed at **(14,14) mm** in drawing coordinates, 4 mm inside the wood boundary.
+- **Place / Remove Holes** mode toggles real 4.8 mm **Black Cut** circle geometry at LEGO guide positions. Unused guide circles **never export**.
+- **LEGO stud relief · 8×8:** closed eight-node cell with inward corner reliefs around four stud centers.
+- **LEGO corner notch · 4 mm arms:** open quarter-round edge; its two endpoints stop halfway between studs. Newly placed corners snap their stud pivot to 8 mm grid centers and rotate around that pivot.
+- **LEGO 2×2 corner · 3 holes:** a **16 × 16 mm** L-pattern part with three closed **4.8 mm** cut-hole contours on **8 mm** pitch and an **open** outer stepped edge. Its **left and bottom perimeter lines are intentionally absent**. W/H numeric resizing is disabled to protect hole spacing and diameter; vector nodes remain editable.
+- **Castle corner · 3×3×3×3:** **12 mm** open square-wave edge at **3 mm** pitch/depth, including a **3 mm vertical left connector**.
+- The experimental **LEGO end corner · mitred 8 mm** was **removed from the Bench** in 0.1.31. Older saved shapes of that type may still load; the current Bench does not offer new copies.
+
+A user's proven **4.8 mm** LEGO stud press fit is the working hole default, **not a guarantee for other wood, kerf, or machines**. Tiling templates may produce shared/overlapping cut segments; the editor does not yet Boolean-union them.
+
+### Grid, layers, appearance and export
+
+- **Drawing grid:** 3 mm default, 1 mm, 0.5 mm, custom 0.01–1000 mm or **Free**; toggle snap and drawing guides independently.
+- **Four fabrication layers:** **Black · Cut**, **Red · Score/Etch**, **Green · Guides**, **Cyan · Framing**. Layer visibility and drawing layer selection live in the sidebar.
+- **Theme Studio:** Light, Dark, Wood, Bloom, Midnight and Blueprint, plus custom interface color settings. Four **display-only layer swatches** are editable beside the layer controls **and** under Theme. Dark theme defaults make Black Cut outlines light enough to see; saved projects remember layer swatch overrides.
+- **Export colors stay canonical**, regardless of the displayed swatches: Black `#222222`, Red `#d74141`, Green `#269b4d`, Cyan `#02a7c3`. Display line weight is thicker than export stroke width; **neither visually thick lines nor color changes compensate kerf**. Export Settings can include Red Score/Etch and optionally Green/Cyan; guide overlays and editor handles are not manufacturing paths.
+- **Navigation:** mouse wheel zoom, Ctrl+wheel zoom, middle-button or Space+drag pan, Shift+wheel horizontal pan, Ctrl++ / Ctrl+- zoom, Ctrl+0 fit.
+- **Save/Open:** editable BloomForge v1 JSON containing shapes and workspace state. SVG export uses mm units with the 298.45 mm sheet viewBox.
+
+## Current limitations and validation
+
+BloomForge's JavaScript syntax and selected pure geometry calculations have been checked during development, but **the complete current build has not been independently regression-tested in Pi Chromium or physically validated against XCS and the laser**. Test the selection/click targets, complicated vector contours, fillets, save/reopen, export, rotations, and operation mapping on the actual workstation.
+
+No automatic Boolean union/difference, multi-path join, collision/out-of-sheet warning, guaranteed kerf compensation, joint fit validation, editable parametric fillet constraint, advanced SVG import, or 3D assembly is implemented yet. The simple Arc tool is not the same as an exact-radius/start/sweep CAD arc editor. Where an item below describes a previous build, its wording is historical and **may have been superseded** by later corrections.
+
+## Development history (newest first)
+
+The entries below retain engineering notes from prior versions, including experiments that were later changed or removed. **Use the current feature guide above for authoritative 0.1.33 behavior.**
+
+---
+
 ## Precision Angle & Radius — build 0.1.33
 
 - Adds **PRECISION GEOMETRY** controls in the right sidebar for numeric **angle (degrees)**, **line length (mm)**, and **fillet radius (mm)**.
@@ -142,167 +231,3 @@
 - Opposite anchor points mirror around the original center when a closed even-node vector is locked. Unlocked vectors continue to move individual nodes.
 - Dragging on a rotated vector resolves pointer coordinates against its original rotation and pivot for a stable drag.
 - This addresses a suspected source of the locked-mode regression. Confirm behavior in Chromium on the Pi; no hardware mouse test has yet been completed.
-
-# BloomForge 🪷⚒️
-**Design it. Snap it. Build it.**
-
-BloomForge is QuarterBitGames LLC's workshop-focused SVG drafting project, part of the BloomCore ecosystem.
-
-## Target platform: Raspberry Pi desktop (Pi-first)
-
-BloomForge is designed for a Raspberry Pi with a graphical desktop, mouse, keyboard, and Chromium. It remains browser-based internally so it can work offline on Pi without a separate native rewrite. Windows/other desktop compatibility is a secondary benefit.
-
-**Launch on the Pi:**
-```sh
-git clone https://github.com/Etsimulocto/BloomForge.git
-cd BloomForge
-sh launch-pi.sh
-```
-
-Alternatively open `index.html` in Chromium by hand. The launcher finds `chromium` or `chromium-browser` and opens an app-style window. This is **not** a headless Pi app and is not a packaged native GUI.
-
-Project JSON and SVG downloads currently use Chromium's normal download workflow. A future Pi-specific iteration can add a native file dialog and remembered project paths. SVG export will still be compatible with the Windows xTool cutting workstation.
-
-Pi hardware/browser performance and laser-import accuracy have **not yet been tested**.
-
-## First working prototype — 0.1
-
-Open **index.html** in a modern browser. No build, installation, server, login, or internet connection is required.
-
-Current capabilities:
-- White/light, dark and wood appearance themes
-- 12 × 12 inch nominal canvas and cyan 11.75 × 11.75 inch usable wood boundary (298.45 mm)
-- 3 mm grid by default; preset 1 mm and 0.5 mm, editable custom spacing (0.01–1000 mm), and Free drawing without snapping
-- Millimeter rulers, locked snap, selection and drag movement
-- Right-side settings and bottom-right tools, left-side reusable parts bench
-- Rectangle, circle, straight line, rounded slot and simple quarter-arc tools
-- Four layers: Black Cut; Red Score/Etch; Green Ruler/Snap; Cyan Alt/Framing
-- Inspect/edit position and geometry dimensions numerically
-- Duplicate, delete, undo and redo
-- Save/open **BloomForge JSON project** (editable shapes and workspace state)
-- Export an **SVG with millimeter dimensions** for import into xTool Creative Space
-
-## Symmetry Lock — build 0.1.12
-
-- Select a part and use the **🔒 Symmetry / 🔓 Free Nodes** button in the compact top toolbar.
-- **Locked:** resizing a rectangle or slot from a corner maintains its center and adjusts opposite sides evenly. Circles remain circular.
-- **Unlocked:** rectangles, circles, rounded slots and lines are converted to editable SVG vector paths, permitting each node to move separately. A circle can therefore be reshaped into an asymmetric outline, not merely an ellipse.
-- For an editable closed vector with an even number of points, **relocking** makes dragging an anchor or control handle move its opposite partner in the opposing direction. This is an editing constraint; it does not automatically repair a previously asymmetric shape.
-- Unlocking a primitive is a **path conversion**. The resulting path exports normally and remains editable in BloomForge project JSON; Undo can restore the prior primitive immediately after conversion.
-- Open line vectors and odd-node contours do not have an automatic opposite-node partner. Legacy arc editing remains limited.
-- Node markers remain **0.5 mm diameter**, with separate invisible grab targets.
-- Pi mouse interactions and physical xTool export still need real-device verification.
-
-## Click-to-edit nodes — build 0.1.11
-
-- With **Select** active, clicking a part now shows its **0.5 mm node dots** immediately; no switch to the Nodes tool is required.
-- **Rectangle / slot:** drag any corner dot to change its bounds.
-- **Circle:** drag the center to move it, or one of the four perimeter dots to adjust the radius.
-- **Line:** drag either endpoint.
-- **Arc:** drag its start and end dots (the existing simple-arc representation is retained).
-- **Compound vector:** drag anchor dots and Bézier handle dots directly with Select or Nodes mode.
-- Each visible dot has a separate transparent hit area, making precise small dots easier to grab. The editable geometry remains true millimeter values.
-- **Nodes** mode remains available for dedicated geometry editing; clicking elsewhere with Select continues to move parts normally.
-- This release adds primitive control points, not arbitrary extra control nodes on circles/rectangles; convert-to-path is a future feature.
-
-## Compound Vector Editing — build 0.1.9 (first implementation)
-
-- Choose **Vector** in the bottom-right tool dock. Click on the canvas to add connected straight-path nodes. Press **Enter** or double-click to finish; **Esc** cancels the in-progress path.
-- Choose **Nodes** to select the finished vector and drag its node markers.
-- With a vector selected, the **Position & Dimensions** sidebar offers **+ New contour**, **Toggle closed**, **Curve node**, **+ Next node**, and **Delete node**.
-- **Curve node** toggles a pair of draggable cubic Bézier control handles on the active node; these can be moved separately with the mouse.
-- A single vector object can contain **multiple independent open or closed contours**, saved together inside its editable BloomForge JSON project.
-- Export writes the contours as a standard SVG `<path>` with `M`, `L`, `C`, and `Z` commands (without editorial node handles).
-- Vector X/Y/W/H fields refer to a bounding box derived from anchors and control points. They can move and resize the path numerically.
-- **Known limitations:** the first version does not yet import existing complex SVG paths, perform Boolean path unions/differences, create holes by winding rules, support arc nodes or automatic tangent smoothing, or provide full desktop vector-app parity. The bounding box uses control points as a conservative approximation, not exact extrema.
-- **Validation needed on Pi:** point-selection hit targets, Bézier dragging, multiple contours, SVG exports into xTool, undo/redo and save/reopen of compound vectors. Do not cut material until these are verified.
-
-## Cursor coordinate readout — build 0.1.8
-
-- The compact top toolbar now shows **CURSOR X / Y** in millimeters whenever the pointer is over the SVG drawing canvas.
-- The readout updates during selection, drawing, and dragging, including while zoomed or panned.
-- Cursor coordinates are **actual unsnapped coordinates**, displayed to two decimals; snapping still applies to placed geometry separately.
-- Moving the pointer outside the SVG clears the coordinate readout.
-
-## Appearance Theme Studio — build 0.1.7
-
-Open **🎨 Theme** in the compact top-right toolbar for an expanded scrollable theme editor.
-
-- Six preset palettes: **Light, Dark, Wood, Bloom, Midnight, Blueprint**.
-- Live color pickers and editable six-digit hex values for **workspace, panels, text, borders, accents, drawing paper, grid, tool buttons, button text, button borders, ruler labels, selection highlight, and sheet framing**.
-- Click **Save as My Theme** to preserve a palette in the current browser's local storage. A **My Theme** preset appears immediately and on subsequent launches in that browser profile.
-- **Reset Colors** restores Light; the current theme values are also included when saving BloomForge JSON project files.
-- Theme and appearance colors are deliberately **separate** from the four fabrication-layer stroke colors used in SVG exports.
-- Custom theme storage is local to the Pi's Chromium profile and does not sync to other computers.
-- The theme menu is scrollable so it fits smaller Raspberry Pi displays.
-
-## Compact toolbar — build 0.1.6
-
-- The dimension inputs (selected part, X/Y, W/H) now share one compact top bar with project actions.
-- **Theme** and **Export Settings** are dropdown controls on the top-right; their options are no longer in the right sidebar.
-- BloomForge branding, build version and QuarterBitGames attribution have moved into the bottom status bar.
-- The right sidebar retains workshop snapping, layers, object properties, and the bottom-right drawing dock.
-- On narrow screens, the dimension portion of the top bar scrolls horizontally instead of hiding controls.
-
-## Grid settings — build 0.1.5
-
-- **3 mm** is the default manufacturing preset; **1 mm** and **0.5 mm** remain available.
-- **Custom** accepts an exact numeric millimeter spacing from **0.01** through **1000** (input displayed with two decimals). Changing the numeric field switches the mode to Custom and activates snapping.
-- **Free** disables coordinate snapping. The last grid spacing remains stored and the grid stays visible; to hide the grid, toggle **Show grid / sheet frame**.
-- Entering an exact value in a part's numerical position/dimensions field is not snapped automatically.
-- Grid mode and custom spacing are preserved in saved BloomForge projects.
-
-## Better selecting and exact dimensions — build 0.1.4
-
-- Click inside a rectangle, rounded slot or circle, or near the visible line of any shape, to select it.
-- A **14-pixel invisible grab stroke** makes narrow cut lines easier to click. It is editor-only; exported SVG paths stay unchanged.
-- A **top dimension header** shows selected object type, X, Y, width and height in millimeters, all editable.
-- The **right sidebar Position & Dimensions inspector** offers the same editable numbers plus the layer selector.
-- Press Enter after editing a number to apply it; no automatic grid rounding is applied to precision numeric entries.
-- Circle X/Y is its **center**; circle width and height are both its **diameter**.
-- Rectangles and rounded slots use top-left X/Y. Lines and current simple arcs use start-point X/Y with absolute endpoint spans for W/H.
-- For a circle, editing W or H sets the shared diameter. It cannot produce an ellipse in this build.
-
-## Canvas navigation (Pi mouse and keyboard)
-
-- **Mouse wheel over canvas:** zoom in/out centered on the mouse cursor.
-- **Ctrl + mouse wheel:** same pointer-centered zoom; prevents browser-page zoom while over the canvas.
-- **Ctrl + + / Ctrl + -:** zoom around canvas center (Ctrl + Shift + = works for plus on common keyboards).
-- **Ctrl + 0:** reset to 100% / full canvas view.
-- **Middle mouse drag** or **hold Space and left-drag:** pan the canvas.
-- **Shift + mouse wheel:** pan horizontally.
-- **+ / − / Fit** controls are also in the right-hand sidebar.
-- Snapping and exported measurements remain in millimeters independently of the view zoom.
-
-## First workshop test
-
-1. Open index.html; check the canvas is light and rulers appear on top and left.
-2. Choose Rect. Drag to create a panel; select it and inspect its dimensions.
-3. Move the panel with snap at 3 mm increments. Switch to 1 mm and back.
-4. Add a 2.5 mm circle from Parts Bench; confirm its radius is **1.25 mm** (diameter 2.5 mm).
-5. Change an object's layer to Red. Hide and show that layer.
-6. Save Project, reopen the JSON, then Export SVG.
-7. **Verify physical dimensions and Cut/Score operations in xTool before cutting any material.** Colors alone do not automatically configure machine operations.
-
-## Important limitations of 0.1
-
-- The editor is a first prototype; functionality has not yet been independently browser-tested or physically laser-validated.
-- Tools use simple primitives. Full Bézier/node editing, advanced arcs, collision warnings, SVG import and joint-aware snapping are future work.
-- Green and cyan drawing guides are excluded from manufacturing export by default.
-- The cyan sheet boundary on screen is a reference; exporting preserves the 298.45 mm sheet viewBox but does not yet warn for overhanging parts or insufficient spacing.
-- The parts bench currently provides predefined templates, not editable global component records.
-- Flat-panel 3D assembly, six orthographic views and box generation are not implemented.
-- The nominal plywood thickness of 3 mm and minimum desired part spacing of 3 mm are design conventions; the prototype does not yet automatically enforce fit/clearance.
-- Keep the original xTool/XCS source files and test new SVG exports on scrap material first.
-
-## Next engineering milestones
-
-**0.1 hardening:** automated geometry/snap/export tests, file validation, better arc handles, collision and out-of-bounds warnings.
-
-**0.2:** persistent measured hardware footprints, customizable rulers and templates, SVG import and more capable path editing.
-
-**0.3:** 3D panel assembly, six orthographic views plus perspective, mating snaps, exploded views.
-
-**0.4:** box generation, flattening, nesting and kerf/tolerance tools.
-
-**Development principle:** A reliable foundation and inspectable failures are more valuable than rushing to a broad feature list.
