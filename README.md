@@ -1,3 +1,14 @@
+## Precision Angle & Radius — build 0.1.33
+
+- Adds **PRECISION GEOMETRY** controls in the right sidebar for numeric **angle (degrees)**, **line length (mm)**, and **fillet radius (mm)**.
+- Select **📐 Angle Line** from the bottom-right tools, then click the canvas to place a straight Black/Red/Green/Cyan-layer line at the exact entered angle and length. **0° points right and +90° points up** (counterclockwise), positive or negative decimal degrees supported. The start uses the selected drawing snap; the computed endpoint bypasses snap to preserve precise angle and length.
+- **Apply to selected line** rewrites the endpoint of an ordinary existing Line while preserving its original starting point, with undo/redo support.
+- **Round selected node**: select an existing vector, choose the **Nodes** tool, click a corner node, enter a numeric radius (e.g., **R3 mm**) and apply. The tool replaces that corner with two tangent points joined by a cubic Bézier circular-arc approximation; adjacent straight edges stay straight. Works with acute/obtuse interior angles, subject to enough clearance on both adjacent legs.
+- Fillets are intentionally refused at a path endpoint, for already-curved adjacent segments, for nearly straight/180-degree corners, or where the requested radius would overlap the next node. The original vector is preserved on a failed operation.
+- Undo/redo and SVG export retain the new geometry. All fabricator color mappings and existing LEGO/castle parts remain unchanged.
+- Angle endpoint coordinates are rounded to 0.001 mm. The fillet is a standard cubic approximation to the true circular arc, not an SVG-native arc primitive or a persistent parametric radius constraint; free-node edits can change it later. Numeric radius may be re-applied to other selected sharp corners.
+- Test Pi Chromium selection and verify the xTool SVG before cutting. **Chamfer, angle-between-edges constraint, and numeric arc sweep** are planned, not part of this build.
+
 ## Four editable display-layer swatches and dark-theme contrast — build 0.1.32
 
 - Adds editable color pickers for **Black Cut, Red Score/Etch, Green Guides, and Cyan Framing** beside the four layers and under **Theme → FOUR LAYER DISPLAY COLORS**. Both sets of pickers stay synchronized.
