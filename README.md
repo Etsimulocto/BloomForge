@@ -1,3 +1,14 @@
+## LEGO secondary grid overlay — build 0.1.24
+
+- **WORKSHOP → LEGO · SECONDARY GRID → Show 8 mm stud grid** toggles a pink hole-guide overlay on the canvas. It is independent of the existing 3 mm / custom drawing grid and its snap setting.
+- The LEGO overlay shows **4.8 mm diameter circles** at **8 mm center-to-center spacing**, with a fixed origin at **(14, 14) mm**: the first hole center is 4 mm inside the actual sheet's top-left corner (10, 10).
+- **Place / Remove Holes** activates click-to-toggle mode: click near any LEGO grid position to place a real **4.8 mm Black Cut circle**; click the same position again to remove that exact, unmodified hole.
+- Placed holes are normal editable circles: move, rotate, select, duplicate, delete, save, undo and export them like other parts. Moving one off-grid means it won't be removed by the original grid point until moved back.
+- The guide overlay is UI-only and **is not included in SVG cut exports**. Only holes intentionally placed into the drawing will export.
+- The overlay visibility is saved with the BloomForge project JSON. It does not change existing snap resolution or cut geometry of unrelated objects.
+- This uses the builder's tested 4.8 mm stud fit as the initial nominal hole diameter; machine/plywood kerf calibration is still the builder's responsibility.
+- Pi Chromium rendering and physical press-fit require testing on hardware.
+
 ## Castle tab repair — build 0.1.21
 
 - Corrected the prior 0.1.20 castle part being **invisible** because its vector object lacked a layer. New castle tabs are assigned to the black cut layer.
