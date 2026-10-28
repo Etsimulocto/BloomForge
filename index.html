@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>BloomForge 0.1.26 · QuarterBitGames</title>
+<title>BloomForge 0.1.27 · QuarterBitGames</title>
 <style>
 :root{--bg:#eaf0f2;--panel:#ffffff;--ink:#243441;--border:#cbd5dd;--accent:#0297a6;--canvas:#ffffff;--grid:#dfe7e9;--button-bg:#ffffff;--button-ink:#243441;--button-border:#cbd5dd;--guide-label:#667785;--selection:#ea5b9f;--canvas-frame:#02a7c3}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px system-ui,Segoe UI,Arial,sans-serif}
@@ -94,7 +94,7 @@ button,input,select{font:inherit}button{border:1px solid var(--button-border);ba
 <section class="section"><h3>POSITION & DIMENSIONS</h3><div class="selected-note" id="symmetryState" aria-live="polite">SELECT A PART</div><div id="properties" class="muted">Select or draw an object to edit it.</div><div class="row"><button id="duplicate">Duplicate</button><button id="delete">Delete</button><button id="undo">Undo</button><button id="redo">Redo</button></div></section>
 
 <section class="tools"><h3>TOOLS · BOTTOM RIGHT</h3><div class="toolgrid" id="tools"><button data-tool="select">Select</button><button data-tool="rect">Rect</button><button data-tool="circle">Circle</button><button data-tool="line">Line</button><button data-tool="slot">Slot</button><button data-tool="arc">Arc</button><button data-tool="vector">Vector</button><button data-tool="nodes">Nodes</button></div></section>
-</aside><footer class="info"><span><span id="status">Ready · select a tool · 3 mm snap enabled</span> · <span id="interactionStatus">Ready for node edits</span></span><span class="footerbrand">🪷 BloomForge · BUILD 0.1.26 · QuarterBitGames LLC · Precision Workbench</span></footer></div>
+</aside><footer class="info"><span><span id="status">Ready · select a tool · 3 mm snap enabled</span> · <span id="interactionStatus">Ready for node edits</span></span><span class="footerbrand">🪷 BloomForge · BUILD 0.1.27 · QuarterBitGames LLC · Precision Workbench</span></footer></div>
 <script>
 'use strict';
 const NS='http://www.w3.org/2000/svg', SHEET=298.45;
@@ -192,6 +192,13 @@ function updateDimension(id,field,value){
  if(['w','h'].includes(field)&&value<=0)return false;
  remember();value=round(value);
  if(s.kind==='vector'){
+  // The photographic LEGO corner keeps its radius fixed as its two legs stretch.
+  if(s.profile==='corner-cutout'&&['w','h'].includes(field)){
+   const d=dimensions(s),w=field==='w'?value:d.w,h=field==='h'?value:d.h;
+   if(w<=0||h<=0){history.pop();return false}
+   s.subpaths[0].points=cornerCutoutPoints(d.x,d.y,w,h,s.cornerRadius||2.4);
+   render();return true;
+  }
   const dim=dimensions(s),source=field==='x'?dim.x:field==='y'?dim.y:field==='w'?dim.w:dim.h;
   if(['w','h'].includes(field)&&source<=0){history.pop();return false}
   const transform=(p)=>{
@@ -615,15 +622,33 @@ function legoInnerCornerPoints(x=30,y=30){
 function legoInnerCornerPart(x=30,y=30,layer='black'){
  return{id:uid(),kind:'vector',layer,subpaths:[{closed:true,points:legoInnerCornerPoints(x,y)}],symmetryLocked:false,rotation:0};
 }
+// Open, stretchable stepped corner from the photographed LEGO bar.
+// The bend is a quarter-round with a fixed 2.4 mm radius (4.8 mm stud reference).
+// It is an EDGE section, not a full plate or a closed shape.
+function cornerCutoutPoints(x=30,y=30,w=8,h=8,r=2.4){
+ const radius=Math.min(r,w,h),k=0.5522847498307936*radius;
+ return [
+  {x:round(x),y:round(y)},
+  {x:round(x),y:round(y+h-radius),outX:round(x),outY:round(y+h-radius+k)},
+  {x:round(x+radius),y:round(y+h),inX:round(x+radius-k),inY:round(y+h)},
+  {x:round(x+w),y:round(y+h)}
+ ];
+}
+function cornerCutoutPart(x=30,y=30,w=8,h=8,layer='black'){
+ return {id:uid(),kind:'vector',layer,profile:'corner-cutout',cornerRadius:2.4,
+  subpaths:[{closed:false,points:cornerCutoutPoints(x,y,w,h)}],
+  symmetryLocked:false,rotation:0};
+}
 function place(kind,w,h,layer='black'){
  remember();let s;
- if(kind==='lego-inner-corner')s=legoInnerCornerPart(30,30,layer);
+ if(kind==='corner-cutout')s=cornerCutoutPart(30,30,w,h,layer);
+ else if(kind==='lego-inner-corner')s=legoInnerCornerPart(30,30,layer);
  else if(kind==='castle-edge')s={id:uid(),kind:'vector',layer,subpaths:[{closed:false,points:castleEdgePoints(30,30)}],symmetryLocked:false,rotation:0};
  else if(kind==='circle')s={id:uid(),kind,layer,x:45,y:45,r:w/2};
  else s={id:uid(),kind,layer,x:30,y:30,w,h};
  state.shapes.push(s);state.selected=s.id;setTool('select');
 }
-const templates=[['3 mm hole','circle',3,3],['2.5 mm hole','circle',2.5,2.5],['6 × 18 slot','slot',18,6],['3 × 12 tab','rect',12,3],['Castle corner · 3×3×3×3','castle-edge',12,3],['LEGO stud relief · 8×8','lego-inner-corner',8,8],['30 × 30 panel','rect',30,30],['60 × 60 panel','rect',60,60],['3 mm ruler','rect',30,3,'green'],['Sheet frame','rect',SHEET,SHEET,'cyan']];
+const templates=[['3 mm hole','circle',3,3],['2.5 mm hole','circle',2.5,2.5],['6 × 18 slot','slot',18,6],['3 × 12 tab','rect',12,3],['Castle corner · 3×3×3×3','castle-edge',12,3],['LEGO stud relief · 8×8','lego-inner-corner',8,8],['LEGO corner notch · 8×8','corner-cutout',8,8],['30 × 30 panel','rect',30,30],['60 × 60 panel','rect',60,60],['3 mm ruler','rect',30,3,'green'],['Sheet frame','rect',SHEET,SHEET,'cyan']];
 // The Parts Bench has its own visible, double-weight SVG geometry previews.
 // These are UI thumbnails only; placement and fabrication/export dimensions remain unchanged.
 function benchIcon(kind,w,h,layer){
@@ -632,7 +657,10 @@ function benchIcon(kind,w,h,layer){
  const scale=Math.min(22/Math.max(w,.01),22/Math.max(h,.01));
  const sw=Math.max(3,Math.min(22,w*scale)),sh=Math.max(3,Math.min(22,h*scale));
  let shape;
- if(kind==='lego-inner-corner'){
+ if(kind==='corner-cutout'){
+  shape=el('path',{d:vectorPath({subpaths:[{closed:false,points:cornerCutoutPoints(0,0,8,8)}]}),transform:'translate(5 5) scale(2.75)'});
+ }
+ else if(kind==='lego-inner-corner'){
   const temporary={subpaths:[{closed:true,points:legoInnerCornerPoints(0,0)}]};
   shape=el('path',{d:vectorPath(temporary),transform:'translate(5 5) scale(2.75)'});
  }
