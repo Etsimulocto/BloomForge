@@ -1,3 +1,10 @@
+## Symmetry-locked drag correction — build 0.1.14
+
+- **Locked must still resize**: mirrored node drags now use the object's geometry at mouse-down rather than repeatedly adjusting from the previous pointer event.
+- Opposite anchor points mirror around the original center when a closed even-node vector is locked. Unlocked vectors continue to move individual nodes.
+- Dragging on a rotated vector resolves pointer coordinates against its original rotation and pivot for a stable drag.
+- This addresses a suspected source of the locked-mode regression. Confirm behavior in Chromium on the Pi; no hardware mouse test has yet been completed.
+
 # BloomForge 🪷⚒️
 **Design it. Snap it. Build it.**
 
