@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>BloomForge 0.1.31 · QuarterBitGames</title>
+<title>BloomForge 0.1.32 · QuarterBitGames</title>
 <style>
 :root{--bg:#eaf0f2;--panel:#ffffff;--ink:#243441;--border:#cbd5dd;--accent:#0297a6;--canvas:#ffffff;--grid:#dfe7e9;--button-bg:#ffffff;--button-ink:#243441;--button-border:#cbd5dd;--guide-label:#667785;--selection:#ea5b9f;--canvas-frame:#02a7c3}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px system-ui,Segoe UI,Arial,sans-serif}
@@ -44,6 +44,10 @@ button,input,select{font:inherit}button{border:1px solid var(--button-border);ba
 .theme-popup .theme-actions{display:flex;gap:6px;margin:12px 0 4px}
 .theme-popup .theme-actions button{flex:1}
 .theme-popup .hint{font-size:11px;opacity:.75;margin:8px 0 0}
+.layer-color-row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:5px 0;font-size:12px}
+.layer-color-row input[type=color]{width:42px;height:27px;padding:2px;flex-shrink:0;cursor:pointer}
+.layer-swatch-picker{width:28px;height:25px;padding:1px;flex-shrink:0;cursor:pointer}
+.layer-reset{font-size:11px;padding:4px 8px}
 .sheet-label{position:absolute;left:10px;bottom:7px;font-size:11px;opacity:.7;pointer-events:none}@media(max-width:850px){.app{grid-template-columns:115px minmax(250px,1fr) 210px}.bench,.right{padding:7px}.tag{display:none}}@media(max-width:640px){.app{grid-template-columns:90px minmax(200px,1fr);grid-template-rows:54px minmax(0,1fr) 210px 34px}.top,.info{grid-column:1/3}.top{grid-row:1}.stage,.bench{grid-row:2}.info{grid-row:4}.right{grid-column:1/3;grid-row:3;overflow:auto}.toolgrid{grid-template-columns:repeat(6,1fr)}}
 </style></head>
 <body data-theme="light"><div class="app">
@@ -69,7 +73,11 @@ button,input,select{font:inherit}button{border:1px solid var(--button-border);ba
 <div class="theme-title">CUSTOM COLORS</div>
 <div class="color-settings" id="themeColors"></div>
 <div class="theme-actions"><button type="button" id="themeReset">Reset Colors</button><button type="button" id="themeSave">Save as My Theme</button></div>
-<div class="hint">These settings affect the interface only. Black/Red/Green/Cyan fabrication layer colors stay unchanged.</div>
+<div class="theme-title" style="margin-top:12px">FOUR LAYER DISPLAY COLORS</div>
+<div class="muted">Preview colors only. SVG exports keep their laser layer colors.</div>
+<div id="themeLayerColors"></div>
+<button id="layerColorReset" type="button" class="layer-reset">Reset layer display colors</button>
+<div class="hint">Themes affect the editor. Fabrication/export colors stay Black, Red, Green and Cyan.</div>
 </div></details>
 <details id="exportMenu"><summary>Export Settings ▾</summary><div class="menu" id="exportPopup">
 <label><input type="checkbox" id="exportRed" checked> Include red Score/Etch</label>
@@ -94,15 +102,43 @@ button,input,select{font:inherit}button{border:1px solid var(--button-border);ba
 <section class="section"><h3>POSITION & DIMENSIONS</h3><div class="selected-note" id="symmetryState" aria-live="polite">SELECT A PART</div><div id="properties" class="muted">Select or draw an object to edit it.</div><div class="row"><button id="duplicate">Duplicate</button><button id="delete">Delete</button><button id="undo">Undo</button><button id="redo">Redo</button></div></section>
 
 <section class="tools"><h3>TOOLS · BOTTOM RIGHT</h3><div class="toolgrid" id="tools"><button data-tool="select">Select</button><button data-tool="rect">Rect</button><button data-tool="circle">Circle</button><button data-tool="line">Line</button><button data-tool="slot">Slot</button><button data-tool="arc">Arc</button><button data-tool="vector">Vector</button><button data-tool="nodes">Nodes</button><button data-tool="cut-line" title="Select a vector and click a line segment or node to remove it">✂ Cut Line</button></div></section>
-</aside><footer class="info"><span><span id="status">Ready · select a tool · 3 mm snap enabled</span> · <span id="interactionStatus">Ready for node edits</span></span><span class="footerbrand">🪷 BloomForge · BUILD 0.1.31 · QuarterBitGames LLC · Precision Workbench</span></footer></div>
+</aside><footer class="info"><span><span id="status">Ready · select a tool · 3 mm snap enabled</span> · <span id="interactionStatus">Ready for node edits</span></span><span class="footerbrand">🪷 BloomForge · BUILD 0.1.32 · QuarterBitGames LLC · Precision Workbench</span></footer></div>
 <script>
 'use strict';
 const NS='http://www.w3.org/2000/svg', SHEET=298.45;
 const colors={black:'#222222',red:'#d74141',green:'#269b4d',cyan:'#02a7c3'};
 const names={black:'Black · Cut',red:'Red · Score/Etch',green:'Green · Ruler/Snap',cyan:'Cyan · Alt/Framing'};
+// Display layer swatches are separate from fabrication/export colors.
+const DARK_THEMES=new Set(['dark','midnight','blueprint']);
+function displayLayerColor(key){
+ const custom=state.layerColors?.[key];
+ if(typeof custom==='string'&&/^#[0-9a-fA-F]{6}$/.test(custom))return custom;
+ if(key==='black'&&DARK_THEMES.has(state.theme))return '#f4f7fb';
+ // A customized dark drawing-paper color should also have legible black cuts.
+ if(key==='black'&&state.theme==='custom'){
+  const c=state.themeColors?.canvas;
+  if(typeof c==='string'&&/^#[0-9a-fA-F]{6}$/.test(c)){
+   const rgb=[1,3,5].map(i=>parseInt(c.slice(i,i+2),16)/255);
+   const lin=v=>v<=.04045?v/12.92:((v+.055)/1.055)**2.4;
+   if(.2126*lin(rgb[0])+.7152*lin(rgb[1])+.0722*lin(rgb[2])<.22)return '#f4f7fb';
+  }
+ }
+ return colors[key]||colors.black;
+}
+function refreshLayerColorPickers(){
+ for(const key of Object.keys(colors)){
+  const value=displayLayerColor(key);
+  for(const picker of document.querySelectorAll('[data-layer-color="'+key+'"]'))picker.value=value;
+ }
+}
+function changeLayerDisplayColor(key,value){
+ if(!Object.hasOwn(colors,key)||!/^#[0-9a-fA-F]{6}$/.test(value))return;
+ state.layerColors={...state.layerColors,[key]:value.toLowerCase()};
+ refreshLayerColorPickers();render();
+}
 const $=id=>document.getElementById(id);
 const svg=$('drawing'), objects=$('objects'), drafts=$('draft');
-let state={shapes:[],selected:null,tool:'select',layer:'black',step:3,gridMode:'3',customStep:3,snap:true,visible:{black:true,red:true,green:true,cyan:true},theme:'light',themeColors:null,legoGridVisible:false};
+let state={shapes:[],selected:null,tool:'select',layer:'black',step:3,gridMode:'3',customStep:3,snap:true,visible:{black:true,red:true,green:true,cyan:true},theme:'light',themeColors:null,layerColors:null,legoGridVisible:false};
 let drag=null,history=[],future=[],spaceHeld=false,vectorDraft=null,activeNode=null;
 const BASE_VIEW={x:0,y:0,w:320,h:320};
 let view={...BASE_VIEW};
@@ -126,7 +162,7 @@ function clearCursor(){$('cursorX').textContent='—';$('cursorY').textContent='
 svg.addEventListener('pointermove',updateCursor);
 svg.addEventListener('pointerleave',clearCursor);
 function el(name,attrs={}){let e=document.createElementNS(NS,name);for(let [k,v] of Object.entries(attrs))e.setAttribute(k,v);return e}
-function attrShape(s){const a={fill:'none',stroke:colors[s.layer]||colors.black,'stroke-width':'.55','vector-effect':'non-scaling-stroke','data-id':s.id};let k=s.kind;
+function attrShape(s,forExport=false){const a={fill:'none',stroke:forExport?(colors[s.layer]||colors.black):displayLayerColor(s.layer),'stroke-width':'.55','vector-effect':'non-scaling-stroke','data-id':s.id};let k=s.kind;
  if(k==='rect')return el('rect',{...a,x:s.x,y:s.y,width:s.w,height:s.h});
  if(k==='circle')return el('circle',{...a,cx:s.x,cy:s.y,r:s.r});
  if(k==='line')return el('line',{...a,x1:s.x,y1:s.y,x2:s.x2,y2:s.y2});
@@ -833,7 +869,7 @@ const templates=[['3 mm hole','circle',3,3],['2.5 mm hole','circle',2.5,2.5],['6
 // These are UI thumbnails only; placement and fabrication/export dimensions remain unchanged.
 function benchIcon(kind,w,h,layer){
  const preview=el('svg',{viewBox:'0 0 32 32',class:'template-icon','aria-hidden':'true'});
- const stroke=colors[layer||'black'];
+ const stroke=displayLayerColor(layer||'black');
  const scale=Math.min(22/Math.max(w,.01),22/Math.max(h,.01));
  const sw=Math.max(3,Math.min(22,w*scale)),sh=Math.max(3,Math.min(22,h*scale));
  let shape;
@@ -866,7 +902,11 @@ for(const [title,kind,w,h,layer] of templates){
  const label=document.createElement('span');label.className='template-name';label.textContent=title;b.append(label);
  b.onclick=()=>place(kind,w,h,layer);$('templates').append(b);
 }
-for(let key of Object.keys(colors)){let row=document.createElement('div');row.className='layer';let label=document.createElement('label');let check=document.createElement('input');check.type='checkbox';check.checked=true;check.onchange=()=>{state.visible[key]=check.checked;render()};let dot=document.createElement('span');dot.className='swatch';dot.style.background=colors[key];label.append(check,dot,document.createTextNode(names[key]));let radio=document.createElement('input');radio.type='radio';radio.name='activeLayer';radio.title='Active drawing layer';radio.checked=key==='black';radio.onchange=()=>state.layer=key;row.append(label,radio);$('layers').append(row)}
+for(let key of Object.keys(colors)){let row=document.createElement('div');row.className='layer';let label=document.createElement('label');let check=document.createElement('input');check.type='checkbox';check.checked=true;check.onchange=()=>{state.visible[key]=check.checked;render()};let dot=document.createElement('span');dot.className='swatch';dot.style.background=colors[key];
+ const picker=document.createElement('input');picker.type='color';picker.className='layer-swatch-picker';
+ picker.dataset.layerColor=key;picker.title='On-screen '+names[key]+' color (SVG export unchanged)';
+ picker.value=displayLayerColor(key);picker.addEventListener('input',e=>changeLayerDisplayColor(key,e.target.value));
+ label.append(check,document.createTextNode(names[key]));row.append(label,picker);let radio=document.createElement('input');radio.type='radio';radio.name='activeLayer';radio.title='Active drawing layer';radio.checked=key==='black';radio.onchange=()=>state.layer=key;row.append(radio);$('layers').append(row)}
 for(let b of document.querySelectorAll('[data-tool]'))b.onclick=()=>setTool(b.dataset.tool);
 function refreshGrid(){
  const val=state.step;
@@ -922,6 +962,7 @@ function applyColors(paletteName,colorsOverride=null){
  document.body.dataset.theme='custom';
  for(const [name,color] of Object.entries(result))document.documentElement.style.setProperty('--'+name,color);
  renderThemeControls();
+ refreshLayerColorPickers();render(); 
 }
 function renderThemeControls(){
  for(const btn of $('themePalettes').querySelectorAll('[data-palette]'))btn.setAttribute('aria-pressed',String(state.theme===btn.dataset.palette));
@@ -930,6 +971,17 @@ function renderThemeControls(){
   field.querySelector('[type=color]').value=color;field.querySelector('[type=text]').value=color;
  }
 }
+// Mirror all four editable swatches inside the Theme dropdown.
+for(const key of Object.keys(colors)){
+ const row=document.createElement('label');row.className='layer-color-row';
+ const name=document.createElement('span');name.textContent=names[key];
+ const picker=document.createElement('input');picker.type='color';picker.dataset.layerColor=key;
+ picker.setAttribute('aria-label',names[key]+' display color');
+ picker.value=displayLayerColor(key);
+ picker.addEventListener('input',e=>changeLayerDisplayColor(key,e.target.value));
+ row.append(name,picker);$('themeLayerColors').append(row);
+}
+$('layerColorReset').onclick=()=>{state.layerColors=null;refreshLayerColorPickers();render()};
 for(const [name,palette] of Object.entries(THEME_PRESETS)){
  const button=document.createElement('button');button.type='button';button.className='palette-choice';button.dataset.palette=name;
  const swatches=document.createElement('span');swatches.className='palette-swatches';
@@ -1005,9 +1057,11 @@ if((e.key==='Delete'||e.key==='Backspace')&&state.selected)$('delete').click()},
 function download(text,filename,type){let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type}));a.download=filename;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),5000)}
 $('save').onclick=()=>download(JSON.stringify({format:'BloomForge',version:1,material:{thicknessMm:3,sheetMm:SHEET},state},null,2),'bloomforge-project.json','application/json');
 $('open').onclick=()=>$('file').click();
-$('file').onchange=async e=>{let file=e.target.files[0];if(!file)return;try{let parsed=JSON.parse(await file.text());if(parsed.format!=='BloomForge'||parsed.version!==1||!Array.isArray(parsed.state?.shapes))throw Error('Not a BloomForge v1 project');for(let s of parsed.state.shapes){if(!['rect','circle','slot','line','arc','vector'].includes(s.kind)||!colors[s.layer]||(s.kind==='vector'&&(!Array.isArray(s.subpaths)||!s.subpaths.every(sub=>Array.isArray(sub.points)&&sub.points.every(p=>Number.isFinite(p.x)&&Number.isFinite(p.y))))))throw Error('Unknown shape/layer')}state={...state,...parsed.state,selected:null};state.legoGridVisible=!!state.legoGridVisible;state.customStep=Number.isFinite(state.customStep)?state.customStep:3;state.gridMode=['3','1','0.5','custom','free'].includes(state.gridMode)?state.gridMode:(['3','1','0.5'].includes(String(state.step))?String(state.step):'custom');if(!Number.isFinite(state.step)||state.step<=0)state.step=3;refreshGrid();applyColors(state.theme,state.themeColors);history=[];future=[];render()}catch(err){alert('Could not open project: '+err.message)}e.target.value=''};
+$('file').onchange=async e=>{let file=e.target.files[0];if(!file)return;try{let parsed=JSON.parse(await file.text());if(parsed.format!=='BloomForge'||parsed.version!==1||!Array.isArray(parsed.state?.shapes))throw Error('Not a BloomForge v1 project');for(let s of parsed.state.shapes){if(!['rect','circle','slot','line','arc','vector'].includes(s.kind)||!colors[s.layer]||(s.kind==='vector'&&(!Array.isArray(s.subpaths)||!s.subpaths.every(sub=>Array.isArray(sub.points)&&sub.points.every(p=>Number.isFinite(p.x)&&Number.isFinite(p.y))))))throw Error('Unknown shape/layer')}state={...state,...parsed.state,selected:null};
+ state.layerColors=state.layerColors&&typeof state.layerColors==='object'?Object.fromEntries(Object.entries(state.layerColors).filter(([k,v])=>Object.hasOwn(colors,k)&&isHex(v))):null;
+ state.legoGridVisible=!!state.legoGridVisible;state.customStep=Number.isFinite(state.customStep)?state.customStep:3;state.gridMode=['3','1','0.5','custom','free'].includes(state.gridMode)?state.gridMode:(['3','1','0.5'].includes(String(state.step))?String(state.step):'custom');if(!Number.isFinite(state.step)||state.step<=0)state.step=3;refreshGrid();applyColors(state.theme,state.themeColors);history=[];future=[];render()}catch(err){alert('Could not open project: '+err.message)}e.target.value=''};
 $('new').onclick=()=>{if(state.shapes.length&&!confirm('Start a new blank project? Unsaved geometry will be lost.'))return;remember();state.shapes=[];state.selected=null;render()};
-$('export').onclick=()=>{const guides=$('exportGuides').checked,red=$('exportRed').checked;const permitted=new Set(['black',...(red?['red']:[]),...(guides?['green','cyan']:[])]);const included=state.shapes.filter(s=>permitted.has(s.layer));let root=el('svg',{xmlns:NS,width:'298.45mm',height:'298.45mm',viewBox:'10 10 298.45 298.45'});root.append(document.createComment('BloomForge export. Confirm xTool laser operations before cutting.'));for(let key of Object.keys(colors)){if(!permitted.has(key))continue;let group=el('g',{'data-layer':key,id:'bloomforge-'+key});for(let s of included.filter(x=>x.layer===key))group.append(applyRotation(attrShape(s),s));root.append(group)}let text=new XMLSerializer().serializeToString(root);download('<?xml version="1.0" encoding="UTF-8"?>\n'+text,'bloomforge-cut-layout.svg','image/svg+xml')};
+$('export').onclick=()=>{const guides=$('exportGuides').checked,red=$('exportRed').checked;const permitted=new Set(['black',...(red?['red']:[]),...(guides?['green','cyan']:[])]);const included=state.shapes.filter(s=>permitted.has(s.layer));let root=el('svg',{xmlns:NS,width:'298.45mm',height:'298.45mm',viewBox:'10 10 298.45 298.45'});root.append(document.createComment('BloomForge export. Confirm xTool laser operations before cutting.'));for(let key of Object.keys(colors)){if(!permitted.has(key))continue;let group=el('g',{'data-layer':key,id:'bloomforge-'+key});for(let s of included.filter(x=>x.layer===key))group.append(applyRotation(attrShape(s,true),s));root.append(group)}let text=new XMLSerializer().serializeToString(root);download('<?xml version="1.0" encoding="UTF-8"?>\n'+text,'bloomforge-cut-layout.svg','image/svg+xml')};
 const ticks=$('ticks');for(let mm=0;mm<=300;mm+=30){let x=10+mm;if(x<=310){let top=el('text',{x,y:7,'font-size':'4','text-anchor':'middle',fill:'var(--guide-label)'});top.textContent=mm;ticks.append(top)}let y=10+mm;if(y<=310){let left=el('text',{x:7,y:y+1,'font-size':'4','text-anchor':'end',fill:'var(--ink)'});left.textContent=mm;ticks.append(left)}}
 // Position top-bar menus under their buttons while keeping them visible above the canvas.
 for(const [menu,popup] of [['themeMenu','themePopup'],['exportMenu','exportPopup']]){
