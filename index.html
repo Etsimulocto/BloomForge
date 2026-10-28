@@ -446,8 +446,8 @@ function filletVectorNode(shape,si,ni,radius){
  const t2={x:corner.x+v.x*dist,y:corner.y+v.y*dist};
  // Cubic arc control distance: 4/3 tan(sweep/4) * radius, sweep=PI-theta.
  const ctrl=4/3*Math.tan((Math.PI-theta)/4)*radius;
- const p1={x:round(t1.x),y:round(t1.y),outX:round(t1.x-u.y*ctrl*Math.sign(u.x*v.y-u.y*v.x)),outY:round(t1.y+u.x*ctrl*Math.sign(u.x*v.y-u.y*v.x))};
- const p2={x:round(t2.x),y:round(t2.y),inX:round(t2.x+v.y*ctrl*Math.sign(u.x*v.y-u.y*v.x)),inY:round(t2.y-v.x*ctrl*Math.sign(u.x*v.y-u.y*v.x))};
+ const p1={x:round(t1.x),y:round(t1.y),outX:round(t1.x-u.x*ctrl),outY:round(t1.y-u.y*ctrl)};
+ const p2={x:round(t2.x),y:round(t2.y),inX:round(t2.x-v.x*ctrl),inY:round(t2.y-v.y*ctrl)};
  pts.splice(ni,1,p1,p2);
  return true;
 }
