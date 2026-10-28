@@ -11,9 +11,11 @@ else
   exit 1
 fi
 echo "BloomForge launcher: $DIR/index.html"
-if grep -q 'BUILD 0.1.3' "$DIR/index.html"; then
-  echo "BloomForge build 0.1.3 found (zoom diagnostic)."
+# Read the actual version from the current HTML rather than checking an obsolete build.
+BUILD=$(sed -n 's/.*BUILD \(0\.[0-9][0-9.]*\).*/\1/p' "$DIR/index.html" | head -n 1)
+if [ -n "$BUILD" ]; then
+  echo "BloomForge build $BUILD"
 else
-  echo "WARNING: local index.html does not contain build 0.1.3; run git pull in this directory." >&2
+  echo "BloomForge version not found in index.html" >&2
 fi
-exec "$BROWSER" --app="file://$DIR/index.html?build=0.1.3" --start-maximized
+exec "$BROWSER" --app="file://$DIR/index.html" --start-maximized
