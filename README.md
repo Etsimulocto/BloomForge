@@ -1,3 +1,11 @@
+## Heavier on-screen outlines & Parts Bench previews — build 0.1.19
+
+- Canvas part outlines are rendered at **1.1 SVG drawing units**, up from **0.55** (2× on-screen width); selection highlights also double from 1.3 to 2.6. Draft paths receive heavier display strokes.
+- All **Parts Bench** template buttons now show matching bold SVG outline thumbnails, including panels, holes, slots, and layer-specific guide pieces.
+- **Laser SVG export intentionally remains 0.55 stroke width, as before**. Display thickness is not a kerf offset and does not change the cut path, saved geometry, or actual machine kerf.
+- Grid line spacing/color/stroke remain unchanged so measurement guides do not overwhelm the drawing.
+- Pi Chromium visual checks and an xTool import check remain necessary.
+
 ## Symmetry click/drag diagnosis — build 0.1.17
 
 - **Symmetry** and **Free Nodes** controls are now pinned at the *far left of the top bar*, outside the horizontally scrolling dimension fields. They remain visible when a primitive converts to a vector.
