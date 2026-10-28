@@ -37,6 +37,17 @@ Current capabilities:
 - Save/open **BloomForge JSON project** (editable shapes and workspace state)
 - Export an **SVG with millimeter dimensions** for import into xTool Creative Space
 
+## Canvas navigation (Pi mouse and keyboard)
+
+- **Mouse wheel over canvas:** zoom in/out centered on the mouse cursor.
+- **Ctrl + mouse wheel:** same pointer-centered zoom; prevents browser-page zoom while over the canvas.
+- **Ctrl + + / Ctrl + -:** zoom around canvas center (Ctrl + Shift + = works for plus on common keyboards).
+- **Ctrl + 0:** reset to 100% / full canvas view.
+- **Middle mouse drag** or **hold Space and left-drag:** pan the canvas.
+- **Shift + mouse wheel:** pan horizontally.
+- **+ / − / Fit** controls are also in the right-hand sidebar.
+- Snapping and exported measurements remain in millimeters independently of the view zoom.
+
 ## First workshop test
 
 1. Open index.html; check the canvas is light and rulers appear on top and left.
