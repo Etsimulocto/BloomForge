@@ -1,3 +1,13 @@
+## Full-pitch LEGO mitred end corner — build 0.1.29
+
+- Adds **LEGO end corner · mitred 8 mm** to the Parts Bench; preserves both the four-way stud-relief tile and the 4 mm half-pitch corner notch.
+- The new open vector starts with a nominal **2.4 mm radius** stud-center relief, reaches the full **8 mm** LEGO pitch, clips the outside corner with a **1 × 1 mm, 45° mitre**, continues to the 8 mm end, then returns 4 mm along the adjacent edge.
+- Initial points relative to pivot (30,30): `(0,4) → (0,2.4) [Bezier] → (2.4,0) → (7,0) → (8,1) → (8,8) → (4,8)`. One connected open path, Black Cut layer.
+- The stud pivot is shared with the shorter LEGO corner template: **numeric rotation pivots around the stud center, dragging/X-Y snaps that pivot to 8 mm LEGO grid centers, and duplication offsets by 8 mm**.
+- Width/height numeric edits preserve the 2.4 mm stud radius and 1 mm, 45-degree mitre while lengthening straight segments; free-node edits remain available. Minimum edited dimensions 4 mm.
+- The uploaded photograph is a visual reference for the stepped end feature, not a dimensional drawing; the **1 mm mitre and 4 mm return** are editable initial design assumptions. Check physical placement and kerf before production cutting.
+- This is an **open edge**, intended to be connected into a complete cut perimeter.
+
 ## Half-pitch LEGO corner alignment — build 0.1.28
 
 - Corrects **LEGO corner notch** to use **two 4 mm arms** (half the 8 mm LEGO stud pitch), with a nominal **2.4 mm stud-relief radius**. The shape is still an open four-node Bézier curve and the existing four-way stud-relief tile is preserved.
