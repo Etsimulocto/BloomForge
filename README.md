@@ -37,6 +37,18 @@ Current capabilities:
 - Save/open **BloomForge JSON project** (editable shapes and workspace state)
 - Export an **SVG with millimeter dimensions** for import into xTool Creative Space
 
+## Click-to-edit nodes — build 0.1.11
+
+- With **Select** active, clicking a part now shows its **0.5 mm node dots** immediately; no switch to the Nodes tool is required.
+- **Rectangle / slot:** drag any corner dot to change its bounds.
+- **Circle:** drag the center to move it, or one of the four perimeter dots to adjust the radius.
+- **Line:** drag either endpoint.
+- **Arc:** drag its start and end dots (the existing simple-arc representation is retained).
+- **Compound vector:** drag anchor dots and Bézier handle dots directly with Select or Nodes mode.
+- Each visible dot has a separate transparent hit area, making precise small dots easier to grab. The editable geometry remains true millimeter values.
+- **Nodes** mode remains available for dedicated geometry editing; clicking elsewhere with Select continues to move parts normally.
+- This release adds primitive control points, not arbitrary extra control nodes on circles/rectangles; convert-to-path is a future feature.
+
 ## Compound Vector Editing — build 0.1.9 (first implementation)
 
 - Choose **Vector** in the bottom-right tool dock. Click on the canvas to add connected straight-path nodes. Press **Enter** or double-click to finish; **Esc** cancels the in-progress path.
