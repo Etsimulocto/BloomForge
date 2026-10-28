@@ -37,6 +37,14 @@ Current capabilities:
 - Save/open **BloomForge JSON project** (editable shapes and workspace state)
 - Export an **SVG with millimeter dimensions** for import into xTool Creative Space
 
+## Compact toolbar — build 0.1.6
+
+- The dimension inputs (selected part, X/Y, W/H) now share one compact top bar with project actions.
+- **Theme** and **Export Settings** are dropdown controls on the top-right; their options are no longer in the right sidebar.
+- BloomForge branding, build version and QuarterBitGames attribution have moved into the bottom status bar.
+- The right sidebar retains workshop snapping, layers, object properties, and the bottom-right drawing dock.
+- On narrow screens, the dimension portion of the top bar scrolls horizontally instead of hiding controls.
+
 ## Grid settings — build 0.1.5
 
 - **3 mm** is the default manufacturing preset; **1 mm** and **0.5 mm** remain available.
