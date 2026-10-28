@@ -173,8 +173,8 @@ function render(){
   const hitArea=applyRotation(attrShape(s),s);hitArea.setAttribute('stroke','transparent');hitArea.setAttribute('stroke-width','14');hitArea.setAttribute('vector-effect','non-scaling-stroke');hitArea.setAttribute('pointer-events',s.kind==='rect'||s.kind==='slot'||s.kind==='circle'?'all':'stroke');
   if(['rect','slot','circle'].includes(s.kind))hitArea.setAttribute('fill','transparent');
   hitArea.style.cursor='grab';objects.append(hitArea);
- }if(state.tool==='nodes'||state.tool==='select'||state.tool==='cut-line')renderNodeHandles();
- if(state.tool==='cut-line')renderCutSegments();
+ }if(state.tool==='cut-line')renderCutSegments();
+ if(state.tool==='nodes'||state.tool==='select'||state.tool==='cut-line')renderNodeHandles();
  renderProperties();renderTopBar();$('status').textContent=`${state.tool.toUpperCase()} · ${state.shapes.length} shapes · ${state.gridMode==='free'?'FREE drawing':state.step+' mm grid'} · ${state.snap&&state.gridMode!=='free'?'snap ON':'snap OFF'}`;}
 // Normalize the editor's X/Y/W/H fields for every primitive.
  // Circles use center X/Y and diameter W/H. Lines/arcs use start X/Y and absolute width/height.
