@@ -281,14 +281,22 @@ for(const [key,label] of Object.entries(THEME_KEYS)){
  pair.append(picker,value);row.append(name,pair);$('themeColors').append(row);
 }
 $('themeReset').onclick=()=>applyColors('light');
+function addMyTheme(saved){
+ if(!saved||!Object.keys(THEME_KEYS).every(k=>isHex(saved[k])))return;
+ let button=$('themePalettes').querySelector('[data-palette=mine]');
+ if(!button){button=document.createElement('button');button.type='button';button.className='palette-choice';button.dataset.palette='mine';$('themePalettes').append(button)}
+ button.textContent='★ My Theme';button.onclick=()=>applyColors('custom',saved);
+}
 $('themeSave').onclick=()=>{
- try{localStorage.setItem('bloomforge-user-theme-v1',JSON.stringify(state.themeColors));$('themeSave').textContent='Saved ✓';}
- catch(err){alert('Browser could not store your theme: '+err.message)}
+ try{
+  const saved={...state.themeColors};
+  localStorage.setItem('bloomforge-user-theme-v1',JSON.stringify(saved));
+  addMyTheme(saved);$('themeSave').textContent='Saved ✓';
+ }catch(err){alert('Browser could not store your theme: '+err.message)}
 };
 function restoreTheme(){
  let saved=null;try{saved=JSON.parse(localStorage.getItem('bloomforge-user-theme-v1')||'null')}catch(_){}
- if(saved&&Object.keys(THEME_KEYS).every(k=>isHex(saved[k]))){const button=document.createElement('button');button.type='button';button.className='palette-choice';button.dataset.palette='mine';button.textContent='★ My Theme';button.onclick=()=>applyColors('custom',saved);$('themePalettes').append(button)}
- applyColors(state.theme,state.themeColors);
+ addMyTheme(saved);applyColors(state.theme,state.themeColors);
 }
 
 $('guides').onchange=e=>{svg.querySelector('rect[fill="url(#grid)"]').style.display=e.target.checked?'':'none';$('ticks').style.display=e.target.checked?'':'none'};
