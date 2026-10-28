@@ -11,12 +11,12 @@ button,input,select{font:inherit}button{border:1px solid var(--border);backgroun
 <body data-theme="light"><div class="app">
 <header class="top"><span class="brand">🪷 BloomForge</span><span class="tag">QuarterBitGames LLC · precision workbench 0.1</span><span class="grow"></span><button id="new">New</button><button id="save">Save Project</button><button id="open">Open Project</button><button id="export">Export SVG</button><input id="file" type="file" accept=".json,application/json" hidden></header>
 <aside class="bench"><h3>PARTS BENCH</h3><div class="muted">Click a template to place a copy on the sheet.</div><div id="templates"></div><hr><div class="muted">Canvas: 12 × 12 in nominal<br>Sheet: 11.75 × 11.75 in<br>Material: 3 mm plywood</div></aside>
-<main class="stage"><div class="paper"><svg id="drawing" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" aria-label="Precision drawing canvas">
+<main class="stage" id="canvasStage"><div class="paper"><svg id="drawing" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" aria-label="Precision drawing canvas">
 <defs><pattern id="grid" width="3" height="3" patternUnits="userSpaceOnUse"><path d="M 3 0 H 0 V 3" fill="none" stroke="var(--grid)" stroke-width=".23"/></pattern></defs>
 <rect width="320" height="320" fill="var(--canvas)"/><rect x="10" y="10" width="298.45" height="298.45" fill="url(#grid)" stroke="#06aaca" stroke-width=".7" pointer-events="none"/>
 <g id="ticks"></g><g id="objects"></g><g id="draft"></g></svg><span class="sheet-label">Cyan: 11.75 × 11.75 in wood · x/y in mm</span></div></main>
 <aside class="right">
-<section class="section"><h3>WORKSHOP</h3><div class="row"><label>Theme <select id="theme"><option value="light">Light</option><option value="dark">Dark</option><option value="wood">Wood</option></select></label><label>Grid <select id="step"><option value="3">3 mm</option><option value="1">1 mm</option><option value="0.5">0.5 mm</option></select></label></div><div class="row"><button id="zoomOut" title="Zoom out (Ctrl+-)">−</button><button id="zoomReset" title="Fit canvas (Ctrl+0)">100%</button><button id="zoomIn" title="Zoom in (Ctrl++)">+</button><span class="muted" id="zoomLabel">100%</span></div><div class="muted">Wheel: zoom at cursor · Ctrl+wheel: zoom · Shift+wheel: horizontal pan · Middle drag or Space+drag: pan · Ctrl+/−: zoom · Ctrl+0: reset</div><label><input id="snap" type="checkbox" checked> Snap locked</label><label><input id="guides" type="checkbox" checked> Show grid / sheet frame</label></section>
+<section class="section"><h3>WORKSHOP</h3><div class="row"><label>Theme <select id="theme"><option value="light">Light</option><option value="dark">Dark</option><option value="wood">Wood</option></select></label><label>Grid <select id="step"><option value="3">3 mm</option><option value="1">1 mm</option><option value="0.5">0.5 mm</option></select></label></div><div class="row"><button id="zoomOut" title="Zoom out (Ctrl+-)">−</button><button id="zoomReset" title="Fit canvas (Ctrl+0)">100%</button><button id="zoomIn" title="Zoom in (Ctrl++)">+</button><span class="muted" id="zoomLabel">100%</span></div><div class="muted">Wheel over canvas: zoom drawing only · Ctrl+wheel: zoom drawing only · Shift+wheel: horizontal pan · Middle drag or Space+drag: pan · Ctrl+/−: zoom · Ctrl+0: reset</div><label><input id="snap" type="checkbox" checked> Snap locked</label><label><input id="guides" type="checkbox" checked> Show grid / sheet frame</label></section>
 <section class="section"><h3>FOUR LAYERS</h3><div id="layers"></div><div class="muted">Green and cyan are guides: excluded from manufacturing SVG by default.</div></section>
 <section class="section"><h3>SELECTED OBJECT</h3><div id="properties" class="muted">Select or draw an object to edit it.</div><div class="row"><button id="duplicate">Duplicate</button><button id="delete">Delete</button><button id="undo">Undo</button><button id="redo">Redo</button></div></section>
 <section class="section"><h3>EXPORT SETTINGS</h3><label><input type="checkbox" id="exportRed" checked> Include red Score/Etch</label><label><input type="checkbox" id="exportGuides"> Include green/cyan guides</label><div class="muted">Exported SVG retains millimeter units. Check operation assignment in xTool before firing.</div></section>
@@ -72,7 +72,15 @@ svg.addEventListener('pointermove',ev=>{if(drag?.kind==='pan'){panPixels(ev.clie
 svg.addEventListener('pointerup',ev=>{if(!drag)return;if(drag.kind==='pan'){drag=null;return}if(drag.kind==='draw'){const p=point(ev),dist=Math.hypot(p.x-drag.start.x,p.y-drag.start.y);if(dist>=.4){remember();let s=shapeBetween(drag.start,p,state.tool);state.shapes.push(s);state.selected=s.id}}drafts.replaceChildren()}drag=null;render()});
 svg.addEventListener('pointercancel',()=>{drag=null;drafts.replaceChildren();render()});
 svg.addEventListener('auxclick',e=>{if(e.button===1)e.preventDefault()});
-svg.addEventListener('wheel',e=>{e.preventDefault();if(e.shiftKey&&!e.ctrlKey&&!e.metaKey){panPixels(-e.deltaY,0);return}const factor=Math.exp(-Math.max(-150,Math.min(150,e.deltaY))*0.002);zoomAt(factor,e.clientX,e.clientY)},{passive:false});
+// Handle wheel at the whole central viewport, not just the SVG child.
+ // This captures Ctrl+wheel before Chromium's page-zoom default can run.
+ $('canvasStage').addEventListener('wheel',e=>{
+   e.preventDefault();e.stopPropagation();
+   if(e.shiftKey&&!e.ctrlKey&&!e.metaKey){panPixels(-e.deltaY,0);return}
+   const delta=e.deltaMode===1?e.deltaY*16:e.deltaMode===2?e.deltaY*120:e.deltaY;
+   const factor=Math.exp(-Math.max(-150,Math.min(150,delta))*0.002);
+   zoomAt(factor,e.clientX,e.clientY);
+ },{passive:false,capture:true});
 $('zoomIn').onclick=()=>zoomCenter(1.25);
 $('zoomOut').onclick=()=>zoomCenter(1/1.25);
 $('zoomReset').onclick=resetZoom;
@@ -91,10 +99,20 @@ $('delete').onclick=()=>{if(!state.selected)return;remember();state.shapes=state
 $('duplicate').onclick=()=>{let s=state.shapes.find(x=>x.id===state.selected);if(!s)return;remember();let t=copy(s);t.id=uid();t.x=round(t.x+state.step);t.y=round(t.y+state.step);if('x2'in t){t.x2+=state.step;t.y2+=state.step}state.shapes.push(t);state.selected=t.id;render()};
 function undo(){if(history.length){future.push(copy(state.shapes));state.shapes=history.pop();state.selected=null;render()}}function redo(){if(future.length){history.push(copy(state.shapes));state.shapes=future.pop();state.selected=null;render()}}
 $('undo').onclick=undo;$('redo').onclick=redo;
-document.addEventListener('keydown',e=>{if(['INPUT','SELECT','TEXTAREA'].includes(document.activeElement.tagName))return;
+window.addEventListener('keydown',e=>{
+ // Capture at window level so Chromium never scales the entire BloomForge UI.
+ // Preserve typing in editable fields and browser shortcuts unrelated to canvas navigation.
+ if(['INPUT','SELECT','TEXTAREA'].includes(document.activeElement.tagName))return;
 if(e.code==='Space'&&!e.ctrlKey&&!e.metaKey){spaceHeld=true;e.preventDefault();return}
-if(e.ctrlKey||e.metaKey){if(['+','=','Add'].includes(e.key)){e.preventDefault();zoomCenter(1.25);return}if(['-','_','Subtract'].includes(e.key)){e.preventDefault();zoomCenter(1/1.25);return}if(e.key==='0'){e.preventDefault();resetZoom();return}if(e.key.toLowerCase()==='z'){e.preventDefault();e.shiftKey?redo():undo();return}}
-if((e.key==='Delete'||e.key==='Backspace')&&state.selected)$('delete').click()});
+if(e.ctrlKey||e.metaKey){
+ const isPlus=e.code==='Equal'||e.code==='NumpadAdd'||['+','=','Add'].includes(e.key);
+ const isMinus=e.code==='Minus'||e.code==='NumpadSubtract'||['-','_','Subtract'].includes(e.key);
+ if(isPlus){e.preventDefault();e.stopPropagation();zoomCenter(1.25);return}
+ if(isMinus){e.preventDefault();e.stopPropagation();zoomCenter(1/1.25);return}
+ if(e.code==='Digit0'||e.key==='0'){e.preventDefault();e.stopPropagation();resetZoom();return}
+ if(e.key.toLowerCase()==='z'){e.preventDefault();e.shiftKey?redo():undo();return}
+}
+if((e.key==='Delete'||e.key==='Backspace')&&state.selected)$('delete').click()},{capture:true});
 function download(text,filename,type){let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type}));a.download=filename;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),5000)}
 $('save').onclick=()=>download(JSON.stringify({format:'BloomForge',version:1,material:{thicknessMm:3,sheetMm:SHEET},state},null,2),'bloomforge-project.json','application/json');
 $('open').onclick=()=>$('file').click();
