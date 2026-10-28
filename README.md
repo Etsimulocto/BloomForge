@@ -27,7 +27,7 @@ Open **index.html** in a modern browser. No build, installation, server, login, 
 Current capabilities:
 - White/light, dark and wood appearance themes
 - 12 × 12 inch nominal canvas and cyan 11.75 × 11.75 inch usable wood boundary (298.45 mm)
-- 3 mm grid by default; optional 1 mm and 0.5 mm snapping
+- 3 mm grid by default; preset 1 mm and 0.5 mm, editable custom spacing (0.01–1000 mm), and Free drawing without snapping
 - Millimeter rulers, locked snap, selection and drag movement
 - Right-side settings and bottom-right tools, left-side reusable parts bench
 - Rectangle, circle, straight line, rounded slot and simple quarter-arc tools
@@ -36,6 +36,14 @@ Current capabilities:
 - Duplicate, delete, undo and redo
 - Save/open **BloomForge JSON project** (editable shapes and workspace state)
 - Export an **SVG with millimeter dimensions** for import into xTool Creative Space
+
+## Grid settings — build 0.1.5
+
+- **3 mm** is the default manufacturing preset; **1 mm** and **0.5 mm** remain available.
+- **Custom** accepts an exact numeric millimeter spacing from **0.01** through **1000** (input displayed with two decimals). Changing the numeric field switches the mode to Custom and activates snapping.
+- **Free** disables coordinate snapping. The last grid spacing remains stored and the grid stays visible; to hide the grid, toggle **Show grid / sheet frame**.
+- Entering an exact value in a part's numerical position/dimensions field is not snapped automatically.
+- Grid mode and custom spacing are preserved in saved BloomForge projects.
 
 ## Better selecting and exact dimensions — build 0.1.4
 
