@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>BloomForge 0.1.32 · QuarterBitGames</title>
+<title>BloomForge 0.1.33 · QuarterBitGames</title>
 <style>
 :root{--bg:#eaf0f2;--panel:#ffffff;--ink:#243441;--border:#cbd5dd;--accent:#0297a6;--canvas:#ffffff;--grid:#dfe7e9;--button-bg:#ffffff;--button-ink:#243441;--button-border:#cbd5dd;--guide-label:#667785;--selection:#ea5b9f;--canvas-frame:#02a7c3}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px system-ui,Segoe UI,Arial,sans-serif}
@@ -101,8 +101,13 @@ button,input,select{font:inherit}button{border:1px solid var(--button-border);ba
 <section class="section"><h3>FOUR LAYERS</h3><div id="layers"></div><div class="muted">Green and cyan are guides: excluded from manufacturing SVG by default.</div></section>
 <section class="section"><h3>POSITION & DIMENSIONS</h3><div class="selected-note" id="symmetryState" aria-live="polite">SELECT A PART</div><div id="properties" class="muted">Select or draw an object to edit it.</div><div class="row"><button id="duplicate">Duplicate</button><button id="delete">Delete</button><button id="undo">Undo</button><button id="redo">Redo</button></div></section>
 
-<section class="tools"><h3>TOOLS · BOTTOM RIGHT</h3><div class="toolgrid" id="tools"><button data-tool="select">Select</button><button data-tool="rect">Rect</button><button data-tool="circle">Circle</button><button data-tool="line">Line</button><button data-tool="slot">Slot</button><button data-tool="arc">Arc</button><button data-tool="vector">Vector</button><button data-tool="nodes">Nodes</button><button data-tool="cut-line" title="Select a vector and click a line segment or node to remove it">✂ Cut Line</button></div></section>
-</aside><footer class="info"><span><span id="status">Ready · select a tool · 3 mm snap enabled</span> · <span id="interactionStatus">Ready for node edits</span></span><span class="footerbrand">🪷 BloomForge · BUILD 0.1.32 · QuarterBitGames LLC · Precision Workbench</span></footer></div>
+<section class="section"><h3>PRECISION GEOMETRY</h3>
+<div class="row"><label>Angle ° <input id="precisionAngle" type="number" value="17" step="0.1" min="-360" max="360" style="width:76px"></label><label>Length mm <input id="precisionLength" type="number" value="30" min="0.01" step="0.01" style="width:81px"></label></div>
+<div class="row"><button id="precisionApplyLine" title="Set the selected line's angle and length, keeping its start fixed">Apply to selected line</button></div>
+<div class="row"><label>Fillet radius mm <input id="precisionRadius" type="number" value="3" min="0.01" step="0.01" style="width:81px"></label><button id="precisionFillet">Round selected node</button></div>
+<div class="muted">Angle: 0° right, 90° up. Angle Line: click to place. Fillet: select a vector's corner node with Nodes, then enter radius. Snap is bypassed for calculated endpoints.</div>
+</section><section class="tools"><h3>TOOLS · BOTTOM RIGHT</h3><div class="toolgrid" id="tools"><button data-tool="select">Select</button><button data-tool="rect">Rect</button><button data-tool="circle">Circle</button><button data-tool="line">Line</button><button data-tool="slot">Slot</button><button data-tool="arc">Arc</button><button data-tool="vector">Vector</button><button data-tool="nodes">Nodes</button><button data-tool="cut-line" title="Select a vector and click a line segment or node to remove it">✂ Cut Line</button><button data-tool="angle-line" title="Click canvas to place a line at an exact angle and length">📐 Angle Line</button></div></section>
+</aside><footer class="info"><span><span id="status">Ready · select a tool · 3 mm snap enabled</span> · <span id="interactionStatus">Ready for node edits</span></span><span class="footerbrand">🪷 BloomForge · BUILD 0.1.33 · QuarterBitGames LLC · Precision Workbench</span></footer></div>
 <script>
 'use strict';
 const NS='http://www.w3.org/2000/svg', SHEET=298.45;
@@ -401,6 +406,63 @@ function renderProperties(){
 }
 function setTool(t){if(state.tool==='vector'&&t!=='vector'&&vectorDraft)finishVector();state.tool=t;
  if(t==='lego-hole')state.legoGridVisible=true;document.querySelectorAll('[data-tool]').forEach(b=>b.classList.toggle('active',b.dataset.tool===t));render()}
+// Numeric precision tools use millimeter coordinates; angles follow CAD convention
+// (0° right, positive angles counterclockwise / upward on the screen).
+function exactLineEnd(start,angleDeg,length){
+ const a=angleDeg*Math.PI/180;
+ return{x:round(start.x+length*Math.cos(a)),y:round(start.y-length*Math.sin(a))};
+}
+function precisionInputs(){
+ const angle=Number($('precisionAngle').value),length=Number($('precisionLength').value);
+ if(!Number.isFinite(angle)||Math.abs(angle)>360||!Number.isFinite(length)||length<=0||length>100000){
+  alert('Use an angle from -360° to 360° and a positive line length in mm.');return null;
+ }
+ return {angle,length};
+}
+$('precisionApplyLine').onclick=()=>{
+ const s=state.shapes.find(q=>q.id===state.selected),v=precisionInputs();
+ if(!v)return;
+ if(!s||s.kind!=='line'){alert('Select an ordinary Line first, or use Angle Line to create one.');return}
+ remember();const end=exactLineEnd({x:s.x,y:s.y},v.angle,v.length);s.x2=end.x;s.y2=end.y;
+ render();$('interactionStatus').textContent='ANGLE '+v.angle+'° · '+v.length+' mm';
+};
+// Round ONE chosen vector corner with a true circular arc approximated by cubic Bézier.
+// Adjacent segments must be straight and the radius must fit on both legs.
+function filletVectorNode(shape,si,ni,radius){
+ const sub=shape.subpaths[si],pts=sub?.points,n=pts?.length||0;
+ if(n<3||(!sub.closed&&(ni===0||ni===n-1)))return false;
+ const prev=pts[(ni-1+n)%n],corner=pts[ni],next=pts[(ni+1)%n];
+ if(prev.outX!=null||corner.inX!=null||corner.outX!=null||next.inX!=null)return false;
+ const lenA=Math.hypot(prev.x-corner.x,prev.y-corner.y),lenB=Math.hypot(next.x-corner.x,next.y-corner.y);
+ if(lenA<.001||lenB<.001)return false;
+ const u={x:(prev.x-corner.x)/lenA,y:(prev.y-corner.y)/lenA};
+ const v={x:(next.x-corner.x)/lenB,y:(next.y-corner.y)/lenB};
+ const cos=Math.max(-1,Math.min(1,u.x*v.x+u.y*v.y));
+ const theta=Math.acos(cos);
+ if(theta<.01||Math.PI-theta<.01)return false;
+ const dist=radius/Math.tan(theta/2);
+ if(dist>=Math.min(lenA,lenB)-.001)return false;
+ const t1={x:corner.x+u.x*dist,y:corner.y+u.y*dist};
+ const t2={x:corner.x+v.x*dist,y:corner.y+v.y*dist};
+ // Cubic arc control distance: 4/3 tan(sweep/4) * radius, sweep=PI-theta.
+ const ctrl=4/3*Math.tan((Math.PI-theta)/4)*radius;
+ const p1={x:round(t1.x),y:round(t1.y),outX:round(t1.x-u.y*ctrl*Math.sign(u.x*v.y-u.y*v.x)),outY:round(t1.y+u.x*ctrl*Math.sign(u.x*v.y-u.y*v.x))};
+ const p2={x:round(t2.x),y:round(t2.y),inX:round(t2.x+v.y*ctrl*Math.sign(u.x*v.y-u.y*v.x)),inY:round(t2.y-v.x*ctrl*Math.sign(u.x*v.y-u.y*v.x))};
+ pts.splice(ni,1,p1,p2);
+ return true;
+}
+$('precisionFillet').onclick=()=>{
+ const shape=state.shapes.find(q=>q.id===state.selected);
+ const radius=Number($('precisionRadius').value);
+ if(!shape||shape.kind!=='vector'||!activeNode){alert('Use Nodes to select a vector corner first.');return}
+ if(!Number.isFinite(radius)||radius<=0){alert('Enter a positive fillet radius in mm.');return}
+ const baseline=copy(shape);
+ if(!filletVectorNode(shape,activeNode.sub,activeNode.index,radius)){
+  alert('Fillet needs two straight edges at the selected node, with enough space for that radius.');return;
+ }
+ history.push(copy(state.shapes.map(s=>s.id===shape.id?baseline:s)));if(history.length>100)history.shift();future=[];
+ activeNode=null;render();$('interactionStatus').textContent='FILLET R'+radius+' mm applied';
+};
 function shapeBetween(a,b,kind,layer=state.layer){let x=Math.min(a.x,b.x),y=Math.min(a.y,b.y),w=Math.max(state.step,Math.abs(b.x-a.x)),h=Math.max(state.step,Math.abs(b.y-a.y));if(kind==='circle')return{id:uid(),kind,layer,x:a.x,y:a.y,r:Math.max(.5,Math.hypot(b.x-a.x,b.y-a.y))};if(kind==='line'||kind==='arc')return{id:uid(),kind,layer,x:a.x,y:a.y,x2:b.x,y2:b.y};return{id:uid(),kind,layer,x,y,w,h}}
 
 function vectorPath(s){
@@ -662,6 +724,14 @@ $('legoGridToggle').addEventListener('change',e=>{state.legoGridVisible=e.target
 $('legoPlaceMode').addEventListener('click',()=>setTool(state.tool==='lego-hole'?'select':'lego-hole'));
 function hit(ev){return ev.target.closest('[data-id]')?.getAttribute('data-id')}
 svg.addEventListener('pointerdown',ev=>{if(ev.button===1||(ev.button===0&&spaceHeld)){drag={kind:'pan',lastX:ev.clientX,lastY:ev.clientY};svg.setPointerCapture(ev.pointerId);ev.preventDefault();return}if(ev.button!==0)return;
+ if(state.tool==='angle-line'){
+  const v=precisionInputs();if(!v)return;
+  const start=point(ev),end=exactLineEnd(start,v.angle,v.length);
+  remember();const shape={id:uid(),kind:'line',layer:state.layer,x:start.x,y:start.y,x2:end.x,y2:end.y};
+  state.shapes.push(shape);state.selected=shape.id;render();
+  $('interactionStatus').textContent='ANGLE '+v.angle+'° · '+v.length+' mm placed';
+  ev.preventDefault();return;
+ }
  if(state.tool==='cut-line'){
    const node=ev.target.closest('[data-handle="node"]');
    const segment=ev.target.closest('[data-cut-edge]');
